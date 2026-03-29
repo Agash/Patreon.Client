@@ -1,0 +1,12 @@
+C:\repos\Patreon.Client\src\Patreon.Client.DependencyInjection\obj\Release\net10.0\Patreon.Client.DependencyInjection.csproj.AssemblyReference.cache
+C:\repos\Patreon.Client\src\Patreon.Client.DependencyInjection\obj\Release\net10.0\Patreon.Client.DependencyInjection.GeneratedMSBuildEditorConfig.editorconfig
+C:\repos\Patreon.Client\src\Patreon.Client.DependencyInjection\obj\Release\net10.0\Patreon.Client.DependencyInjection.AssemblyInfoInputs.cache
+C:\repos\Patreon.Client\src\Patreon.Client.DependencyInjection\obj\Release\net10.0\Patreon.Client.DependencyInjection.AssemblyInfo.cs
+C:\repos\Patreon.Client\src\Patreon.Client.DependencyInjection\obj\Release\net10.0\Patreon.Client.DependencyInjection.csproj.CoreCompileInputs.cache
+C:\repos\Patreon.Client\src\Patreon.Client.DependencyInjection\bin\Release\net10.0\Patreon.Client.DependencyInjection.deps.json
+C:\repos\Patreon.Client\src\Patreon.Client.DependencyInjection\bin\Release\net10.0\Patreon.Client.DependencyInjection.dll
+C:\repos\Patreon.Client\src\Patreon.Client.DependencyInjection\bin\Release\net10.0\Patreon.Client.dll
+C:\repos\Patreon.Client\src\Patreon.Client.DependencyInjection\obj\Release\net10.0\Patreon..455A7D3E.Up2Date
+C:\repos\Patreon.Client\src\Patreon.Client.DependencyInjection\obj\Release\net10.0\Patreon.Client.DependencyInjection.dll
+C:\repos\Patreon.Client\src\Patreon.Client.DependencyInjection\obj\Release\net10.0\refint\Patreon.Client.DependencyInjection.dll
+C:\repos\Patreon.Client\src\Patreon.Client.DependencyInjection\obj\Release\net10.0\ref\Patreon.Client.DependencyInjection.dll
