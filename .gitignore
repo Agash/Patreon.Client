@@ -1,0 +1,19 @@
+# Build outputs
+bin/
+obj/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+nupkgs/
+
+# User files
+*.user
+.vs/
+.idea/
+*.suo
+*.DotSettings.user
+
+# OS
+.DS_Store
+Thumbs.db
