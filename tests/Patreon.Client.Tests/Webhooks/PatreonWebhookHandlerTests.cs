@@ -2,6 +2,8 @@ using System.Security.Cryptography;
 using System.Text;
 using Agash.Webhook.Abstractions;
 using Patreon.Client.Events;
+using Patreon.Client.JsonApi;
+using Patreon.Client.Models;
 using Patreon.Client.Webhooks;
 using Xunit;
 
@@ -88,10 +90,18 @@ public sealed class PatreonWebhookHandlerTests
         Assert.Equal("members:create", member.EventType);
         Assert.Equal("member-abc-123", member.ResourceId);
         Assert.Equal("member", member.ResourceType);
+
+        // Convenience property
         Assert.NotNull(member.Attributes);
         Assert.Equal("Jane Patron", member.Attributes.FullName);
         Assert.Equal("active_patron", member.Attributes.PatronStatus);
         Assert.Equal(500, member.Attributes.CurrentlyEntitledAmountCents);
+
+        // Full document
+        Assert.NotNull(member.Document);
+        Assert.NotNull(member.Document.Data);
+        Assert.Equal("member-abc-123", member.Document.Data.Id);
+        Assert.Equal("member", member.Document.Data.Type);
     }
 
     [Fact]
@@ -122,8 +132,15 @@ public sealed class PatreonWebhookHandlerTests
         PatreonPledgeWebhookEvent pledge = Assert.IsType<PatreonPledgeWebhookEvent>(result.Event);
         Assert.Equal("members:pledge:update", pledge.EventType);
         Assert.Equal("member-pledge-456", pledge.ResourceId);
+
+        // Convenience property
         Assert.NotNull(pledge.Attributes);
         Assert.Equal("Bob Supporter", pledge.Attributes.FullName);
+
+        // Full document
+        Assert.NotNull(pledge.Document);
+        Assert.NotNull(pledge.Document.Data);
+        Assert.Equal("member-pledge-456", pledge.Document.Data.Id);
     }
 
     [Fact]
@@ -155,9 +172,17 @@ public sealed class PatreonWebhookHandlerTests
         Assert.Equal("posts:publish", post.EventType);
         Assert.Equal("post-789", post.ResourceId);
         Assert.Equal("post", post.ResourceType);
+
+        // Convenience property
         Assert.NotNull(post.Attributes);
         Assert.Equal("New exclusive post!", post.Attributes.Title);
         Assert.False(post.Attributes.IsPublic);
+
+        // Full document
+        Assert.NotNull(post.Document);
+        Assert.NotNull(post.Document.Data);
+        Assert.Equal("post-789", post.Document.Data.Id);
+        Assert.Equal("post", post.Document.Data.Type);
     }
 
     [Fact]
@@ -274,5 +299,65 @@ public sealed class PatreonWebhookHandlerTests
         Assert.True(result.IsAuthenticated);
         Assert.Null(result.Event);
         Assert.NotNull(result.FailureReason);
+    }
+
+    [Fact]
+    public async Task HandleAsyncMemberEventDocumentContainsFullResourceWithIncluded()
+    {
+        const string body = """
+            {
+              "data": {
+                "id": "member-with-tier",
+                "type": "member",
+                "attributes": {
+                  "full_name": "Alice",
+                  "patron_status": "active_patron",
+                  "currently_entitled_amount_cents": 1000,
+                  "will_pay_amount_cents": 1000
+                },
+                "relationships": {
+                  "currently_entitled_tiers": {
+                    "data": [{ "type": "tier", "id": "tier-gold" }]
+                  }
+                }
+              },
+              "included": [
+                {
+                  "type": "tier",
+                  "id": "tier-gold",
+                  "attributes": {
+                    "title": "Gold Tier",
+                    "amount_cents": 1000,
+                    "published": true
+                  }
+                }
+              ]
+            }
+            """;
+
+        WebhookHandleResult<PatreonWebhookEvent> result =
+            await _handler.HandleAsync(BuildRequest(body, Secret, "members:create"), Options);
+
+        Assert.True(result.IsAuthenticated);
+        Assert.True(result.IsKnownEvent);
+
+        PatreonMemberWebhookEvent member = Assert.IsType<PatreonMemberWebhookEvent>(result.Event);
+        Assert.NotNull(member.Document);
+        Assert.NotNull(member.Document.Data);
+        Assert.Equal("member-with-tier", member.Document.Data.Id);
+
+        // Convenience property still works
+        Assert.Equal("Alice", member.Attributes?.FullName);
+
+        // Included side-loading
+        Assert.NotNull(member.Document.Included);
+        Assert.Single(member.Document.Included);
+
+        // Relationship resolution via JsonApiIncludedIndex
+        JsonApiIncludedIndex index = new(member.Document.Included);
+        TierAttributes? tier = index.TryGetAttributesAs<TierAttributes>("tier", "tier-gold");
+        Assert.NotNull(tier);
+        Assert.Equal("Gold Tier", tier.Title);
+        Assert.Equal(1000, tier.AmountCents);
     }
 }

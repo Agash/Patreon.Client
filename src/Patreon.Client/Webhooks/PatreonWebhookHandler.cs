@@ -1,36 +1,28 @@
 using System.Text.Json;
 using Agash.Webhook.Abstractions;
 using Patreon.Client.Events;
+using Patreon.Client.JsonApi;
 using Patreon.Client.Models;
 
 namespace Patreon.Client.Webhooks;
 
 /// <summary>
 /// Transport-neutral Patreon webhook handler. Verifies the HMAC-MD5 signature
-/// and deserializes the payload into a typed <see cref="PatreonWebhookEvent"/>.
+/// and deserializes the JSON:API payload into a typed <see cref="PatreonWebhookEvent"/>.
 /// </summary>
 public sealed class PatreonWebhookHandler
 {
+    private static readonly JsonSerializerOptions s_jsonOptions = new(JsonSerializerDefaults.Web);
+
     private readonly PatreonWebhookSignatureVerifier _verifier;
 
-    /// <summary>
-    /// Initializes a new instance of <see cref="PatreonWebhookHandler"/>.
-    /// </summary>
-    /// <param name="verifier">The signature verifier to use.</param>
+    /// <summary>Initializes a new instance of <see cref="PatreonWebhookHandler"/>.</summary>
     public PatreonWebhookHandler(PatreonWebhookSignatureVerifier verifier)
     {
         _verifier = verifier ?? throw new ArgumentNullException(nameof(verifier));
     }
 
-    /// <summary>
-    /// Handles an incoming Patreon webhook request.
-    /// </summary>
-    /// <param name="request">The transport-neutral webhook request.</param>
-    /// <param name="options">The webhook options containing the secret.</param>
-    /// <param name="cancellationToken">A token that may be used to cancel the operation.</param>
-    /// <returns>
-    /// A <see cref="WebhookHandleResult{T}"/> describing the outcome of handling the request.
-    /// </returns>
+    /// <summary>Handles an incoming Patreon webhook request.</summary>
     public Task<WebhookHandleResult<PatreonWebhookEvent>> HandleAsync(
         WebhookRequest request,
         PatreonWebhookOptions options,
@@ -43,14 +35,10 @@ public sealed class PatreonWebhookHandler
         cancellationToken.ThrowIfCancellationRequested();
 
         if (!string.Equals(request.Method, "POST", StringComparison.OrdinalIgnoreCase))
-        {
             return Task.FromResult(Failure(405, false, false, "Patreon webhooks must use POST."));
-        }
 
         if (!request.HasContentType("application/json"))
-        {
             return Task.FromResult(Failure(400, false, false, "Expected application/json content type."));
-        }
 
         byte[] body = request.Body ?? [];
 
@@ -62,72 +50,28 @@ public sealed class PatreonWebhookHandler
 
         string eventType = "unknown";
         if (request.Headers.TryGetValue(PatreonWebhookSignatureVerifier.EventHeaderName, out string[]? evtValues)
-            && evtValues.Length > 0
-            && !string.IsNullOrWhiteSpace(evtValues[0]))
+            && evtValues.Length > 0 && !string.IsNullOrWhiteSpace(evtValues[0]))
         {
             eventType = evtValues[0];
         }
 
         try
         {
-            using JsonDocument doc = JsonDocument.Parse(body);
-            JsonElement root = doc.RootElement;
-
-            string resourceId = string.Empty;
-            string resourceType = string.Empty;
-
-            if (root.TryGetProperty("data", out JsonElement dataElem))
-            {
-                if (dataElem.TryGetProperty("id", out JsonElement idElem))
-                {
-                    resourceId = idElem.GetString() ?? string.Empty;
-                }
-
-                if (dataElem.TryGetProperty("type", out JsonElement typeElem))
-                {
-                    resourceType = typeElem.GetString() ?? string.Empty;
-                }
-            }
-
             PatreonWebhookEvent evt = eventType switch
             {
                 "members:create" or "members:update" or "members:delete" =>
-                    new PatreonMemberWebhookEvent
-                    {
-                        EventType = eventType,
-                        ResourceId = resourceId,
-                        ResourceType = string.IsNullOrEmpty(resourceType) ? "member" : resourceType,
-                        Attributes = ParseAttributes<MemberAttributes>(root),
-                    },
+                    BuildMemberEvent(eventType, body),
 
                 "members:pledge:create" or "members:pledge:update" or "members:pledge:delete" =>
-                    new PatreonPledgeWebhookEvent
-                    {
-                        EventType = eventType,
-                        ResourceId = resourceId,
-                        ResourceType = string.IsNullOrEmpty(resourceType) ? "member" : resourceType,
-                        Attributes = ParseAttributes<MemberAttributes>(root),
-                    },
+                    BuildPledgeEvent(eventType, body),
 
                 "posts:publish" or "posts:update" or "posts:delete" =>
-                    new PatreonPostWebhookEvent
-                    {
-                        EventType = eventType,
-                        ResourceId = resourceId,
-                        ResourceType = string.IsNullOrEmpty(resourceType) ? "post" : resourceType,
-                        Attributes = ParseAttributes<PostAttributes>(root),
-                    },
+                    BuildPostEvent(eventType, body),
 
-                _ => new PatreonUnknownWebhookEvent
-                {
-                    EventType = eventType,
-                    ResourceId = resourceId,
-                    ResourceType = resourceType,
-                },
+                _ => BuildUnknownEvent(eventType, body),
             };
 
             bool isKnown = evt is not PatreonUnknownWebhookEvent;
-
             return Task.FromResult(new WebhookHandleResult<PatreonWebhookEvent>
             {
                 Response = WebhookResponse.Empty(200),
@@ -143,31 +87,78 @@ public sealed class PatreonWebhookHandler
         }
     }
 
-    private static T? ParseAttributes<T>(JsonElement root)
+    private PatreonMemberWebhookEvent BuildMemberEvent(string eventType, byte[] body)
     {
-        if (root.TryGetProperty("data", out JsonElement data)
-            && data.TryGetProperty("attributes", out JsonElement attrs))
+        JsonApiDocument<MemberAttributes>? doc =
+            JsonSerializer.Deserialize<JsonApiDocument<MemberAttributes>>(body, s_jsonOptions);
+
+        return new PatreonMemberWebhookEvent
         {
-            try
+            EventType = eventType,
+            ResourceId = doc?.Data?.Id ?? string.Empty,
+            ResourceType = doc?.Data?.Type ?? "member",
+            Document = doc,
+        };
+    }
+
+    private PatreonPledgeWebhookEvent BuildPledgeEvent(string eventType, byte[] body)
+    {
+        JsonApiDocument<MemberAttributes>? doc =
+            JsonSerializer.Deserialize<JsonApiDocument<MemberAttributes>>(body, s_jsonOptions);
+
+        return new PatreonPledgeWebhookEvent
+        {
+            EventType = eventType,
+            ResourceId = doc?.Data?.Id ?? string.Empty,
+            ResourceType = doc?.Data?.Type ?? "member",
+            Document = doc,
+        };
+    }
+
+    private PatreonPostWebhookEvent BuildPostEvent(string eventType, byte[] body)
+    {
+        JsonApiDocument<PostAttributes>? doc =
+            JsonSerializer.Deserialize<JsonApiDocument<PostAttributes>>(body, s_jsonOptions);
+
+        return new PatreonPostWebhookEvent
+        {
+            EventType = eventType,
+            ResourceId = doc?.Data?.Id ?? string.Empty,
+            ResourceType = doc?.Data?.Type ?? "post",
+            Document = doc,
+        };
+    }
+
+    private static PatreonUnknownWebhookEvent BuildUnknownEvent(string eventType, byte[] body)
+    {
+        // Capture id/type from the raw JSON without forcing full deserialization
+        string resourceId = string.Empty;
+        string resourceType = string.Empty;
+
+        try
+        {
+            using JsonDocument doc = JsonDocument.Parse(body);
+            if (doc.RootElement.TryGetProperty("data", out JsonElement dataElem))
             {
-                return attrs.Deserialize<T>(PatreonJsonContext.WebOptions);
-            }
-            catch (JsonException)
-            {
-                return default;
+                if (dataElem.TryGetProperty("id", out JsonElement idElem))
+                    resourceId = idElem.GetString() ?? string.Empty;
+                if (dataElem.TryGetProperty("type", out JsonElement typeElem))
+                    resourceType = typeElem.GetString() ?? string.Empty;
             }
         }
+        catch (JsonException) { }
 
-        return default;
+        return new PatreonUnknownWebhookEvent
+        {
+            EventType = eventType,
+            ResourceId = resourceId,
+            ResourceType = resourceType,
+        };
     }
 
     private static WebhookHandleResult<PatreonWebhookEvent> Failure(
-        int statusCode,
-        bool isAuthenticated,
-        bool isKnownEvent,
-        string reason)
-    {
-        return new WebhookHandleResult<PatreonWebhookEvent>
+        int statusCode, bool isAuthenticated, bool isKnownEvent, string reason) =>
+        new()
         {
             Response = WebhookResponse.Empty(statusCode),
             IsAuthenticated = isAuthenticated,
@@ -175,5 +166,4 @@ public sealed class PatreonWebhookHandler
             Event = null,
             FailureReason = reason,
         };
-    }
 }

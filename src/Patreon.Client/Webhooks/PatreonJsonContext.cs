@@ -25,6 +25,11 @@ namespace Patreon.Client.Webhooks;
 [JsonSerializable(typeof(TierAttributes))]
 [JsonSerializable(typeof(PostAttributes))]
 [JsonSerializable(typeof(UserAttributes))]
+[JsonSerializable(typeof(JsonApiDocument<WebhookAttributes>))]
+[JsonSerializable(typeof(JsonApiCollectionDocument<WebhookAttributes>))]
+[JsonSerializable(typeof(WebhookAttributes))]
+[JsonSerializable(typeof(PledgeEventAttributes))]
+[JsonSerializable(typeof(IReadOnlyList<string>))]
 internal sealed partial class PatreonJsonContext : JsonSerializerContext
 {
     /// <summary>

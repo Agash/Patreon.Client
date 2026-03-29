@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -107,6 +108,202 @@ public sealed class PatreonApiClient : IPatreonApiClient
         return GetAsync<JsonApiDocument<MemberAttributes>>(url, cancellationToken);
     }
 
+    /// <inheritdoc />
+    public Task<JsonApiCollectionDocument<PostAttributes>?> GetCampaignPostsAsync(
+        string campaignId,
+        IEnumerable<string>? fields = null,
+        IEnumerable<string>? include = null,
+        int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(campaignId);
+        string url = BuildPagedUrl(
+            $"campaigns/{Uri.EscapeDataString(campaignId)}/posts",
+            "post", fields, include, pageSize, null);
+        return GetAsync<JsonApiCollectionDocument<PostAttributes>>(url, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<JsonApiDocument<PostAttributes>?> GetPostAsync(
+        string postId,
+        IEnumerable<string>? fields = null,
+        IEnumerable<string>? include = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(postId);
+        string url = BuildUrl($"posts/{Uri.EscapeDataString(postId)}", "post", fields, include);
+        return GetAsync<JsonApiDocument<PostAttributes>>(url, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<JsonApiResource<TierAttributes>>?> GetCampaignTiersAsync(
+        string campaignId,
+        IEnumerable<string>? tierFields = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(campaignId);
+        string url = BuildUrl(
+            $"campaigns/{Uri.EscapeDataString(campaignId)}",
+            "campaign",
+            fields: null,
+            include: ["tiers"]);
+
+        string[]? tierFieldArr = tierFields?.ToArray();
+        if (tierFieldArr is { Length: > 0 })
+        {
+            url += $"&fields[tier]={Uri.EscapeDataString(string.Join(",", tierFieldArr))}";
+        }
+
+        JsonApiDocument<CampaignAttributes>? doc =
+            await GetAsync<JsonApiDocument<CampaignAttributes>>(url, cancellationToken)
+                .ConfigureAwait(false);
+
+        if (doc?.Included is null)
+            return null;
+
+        List<JsonApiResource<TierAttributes>> tiers = [];
+        foreach (JsonElement item in doc.Included)
+        {
+            if (!item.TryGetProperty("type", out JsonElement typeElem)
+                || typeElem.GetString() != "tier")
+            {
+                continue;
+            }
+
+            string tierId = item.TryGetProperty("id", out JsonElement idElem)
+                ? idElem.GetString() ?? string.Empty
+                : string.Empty;
+
+            TierAttributes? attrs = null;
+            if (item.TryGetProperty("attributes", out JsonElement attrsElem))
+            {
+                try { attrs = attrsElem.Deserialize<TierAttributes>(s_jsonOptions); }
+                catch (JsonException) { }
+            }
+
+            tiers.Add(new JsonApiResource<TierAttributes>
+            {
+                Id = tierId,
+                Type = "tier",
+                Attributes = attrs,
+            });
+        }
+
+        return tiers;
+    }
+
+    /// <inheritdoc />
+    public Task<JsonApiCollectionDocument<WebhookAttributes>?> GetWebhooksAsync(
+        CancellationToken cancellationToken = default) =>
+        GetAsync<JsonApiCollectionDocument<WebhookAttributes>>("webhooks", cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<JsonApiDocument<WebhookAttributes>?> CreateWebhookAsync(
+        string uri,
+        IReadOnlyList<string> triggers,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(uri);
+        ArgumentNullException.ThrowIfNull(triggers);
+
+        object payload = new
+        {
+            data = new
+            {
+                type = "webhook",
+                attributes = new { uri, triggers },
+            },
+        };
+
+        using HttpResponseMessage response = await _httpClient
+            .PostAsJsonAsync("webhooks", payload, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogWarning(
+                "Patreon API POST webhooks returned HTTP {StatusCode}.",
+                (int)response.StatusCode);
+            return null;
+        }
+
+        using System.IO.Stream stream =
+            await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        return await JsonSerializer
+            .DeserializeAsync<JsonApiDocument<WebhookAttributes>>(stream, s_jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<JsonApiDocument<WebhookAttributes>?> UpdateWebhookAsync(
+        string webhookId,
+        bool? paused = null,
+        string? uri = null,
+        IReadOnlyList<string>? triggers = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(webhookId);
+
+        Dictionary<string, object?> attributes = [];
+        if (paused.HasValue) attributes["paused"] = paused.Value;
+        if (uri is not null) attributes["uri"] = uri;
+        if (triggers is not null) attributes["triggers"] = triggers;
+
+        object payload = new
+        {
+            data = new
+            {
+                type = "webhook",
+                id = webhookId,
+                attributes,
+            },
+        };
+
+        using HttpRequestMessage request = new(
+            new HttpMethod("PATCH"),
+            $"webhooks/{Uri.EscapeDataString(webhookId)}")
+        {
+            Content = JsonContent.Create(payload),
+        };
+
+        using HttpResponseMessage response = await _httpClient
+            .SendAsync(request, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogWarning(
+                "Patreon API PATCH webhooks/{WebhookId} returned HTTP {StatusCode}.",
+                webhookId,
+                (int)response.StatusCode);
+            return null;
+        }
+
+        using System.IO.Stream stream =
+            await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        return await JsonSerializer
+            .DeserializeAsync<JsonApiDocument<WebhookAttributes>>(stream, s_jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteWebhookAsync(string webhookId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(webhookId);
+
+        using HttpResponseMessage response = await _httpClient
+            .DeleteAsync($"webhooks/{Uri.EscapeDataString(webhookId)}", cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogWarning(
+                "Patreon API DELETE webhooks/{WebhookId} returned HTTP {StatusCode}.",
+                webhookId,
+                (int)response.StatusCode);
+        }
+    }
+
     private async Task<T?> GetAsync<T>(string url, CancellationToken cancellationToken)
     {
         using HttpResponseMessage response =
@@ -159,15 +356,15 @@ public sealed class PatreonApiClient : IPatreonApiClient
         return sb.ToString();
     }
 
-    private static string BuildMembersUrl(
-        string campaignId,
+    private static string BuildPagedUrl(
+        string path,
         string resourceType,
         IEnumerable<string>? fields,
         IEnumerable<string>? include,
         int pageSize,
         string? cursor)
     {
-        StringBuilder sb = new($"campaigns/{Uri.EscapeDataString(campaignId)}/members");
+        StringBuilder sb = new(path);
         bool hasQuery = false;
 
         string[]? fieldArr = fields?.ToArray();
@@ -203,5 +400,18 @@ public sealed class PatreonApiClient : IPatreonApiClient
         }
 
         return sb.ToString();
+    }
+
+    private static string BuildMembersUrl(
+        string campaignId,
+        string resourceType,
+        IEnumerable<string>? fields,
+        IEnumerable<string>? include,
+        int pageSize,
+        string? cursor)
+    {
+        return BuildPagedUrl(
+            $"campaigns/{Uri.EscapeDataString(campaignId)}/members",
+            resourceType, fields, include, pageSize, cursor);
     }
 }

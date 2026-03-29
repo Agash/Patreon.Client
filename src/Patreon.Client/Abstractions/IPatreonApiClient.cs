@@ -80,4 +80,78 @@ public interface IPatreonApiClient
         IEnumerable<string>? fields = null,
         IEnumerable<string>? include = null,
         CancellationToken cancellationToken = default);
+
+    // -- Posts --
+
+    /// <summary>
+    /// Returns all posts for a campaign.
+    /// Corresponds to <c>GET /campaigns/{campaignId}/posts</c>.
+    /// </summary>
+    Task<JsonApiCollectionDocument<PostAttributes>?> GetCampaignPostsAsync(
+        string campaignId,
+        IEnumerable<string>? fields = null,
+        IEnumerable<string>? include = null,
+        int pageSize = 20,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns a single post by ID.
+    /// Corresponds to <c>GET /posts/{postId}</c>.
+    /// </summary>
+    Task<JsonApiDocument<PostAttributes>?> GetPostAsync(
+        string postId,
+        IEnumerable<string>? fields = null,
+        IEnumerable<string>? include = null,
+        CancellationToken cancellationToken = default);
+
+    // -- Tiers --
+
+    /// <summary>
+    /// Returns all tiers for a campaign (side-loaded from the campaign resource).
+    /// Corresponds to <c>GET /campaigns/{campaignId}?include=tiers</c>.
+    /// </summary>
+    Task<IReadOnlyList<JsonApiResource<TierAttributes>>?> GetCampaignTiersAsync(
+        string campaignId,
+        IEnumerable<string>? tierFields = null,
+        CancellationToken cancellationToken = default);
+
+    // -- Webhooks --
+
+    /// <summary>
+    /// Returns all webhooks owned by the authenticated creator.
+    /// Requires <c>w:campaigns.webhook</c> OAuth scope.
+    /// Corresponds to <c>GET /webhooks</c>.
+    /// </summary>
+    Task<JsonApiCollectionDocument<WebhookAttributes>?> GetWebhooksAsync(
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Creates a new webhook for the authenticated creator's campaign.
+    /// Requires <c>w:campaigns.webhook</c> OAuth scope.
+    /// The webhook <c>secret</c> is only returned in this response — save it immediately.
+    /// Corresponds to <c>POST /webhooks</c>.
+    /// </summary>
+    Task<JsonApiDocument<WebhookAttributes>?> CreateWebhookAsync(
+        string uri,
+        IReadOnlyList<string> triggers,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates an existing webhook (e.g. change URI, triggers, or unpause after failures).
+    /// Requires <c>w:campaigns.webhook</c> OAuth scope.
+    /// Corresponds to <c>PATCH /webhooks/{webhookId}</c>.
+    /// </summary>
+    Task<JsonApiDocument<WebhookAttributes>?> UpdateWebhookAsync(
+        string webhookId,
+        bool? paused = null,
+        string? uri = null,
+        IReadOnlyList<string>? triggers = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a webhook.
+    /// Requires <c>w:campaigns.webhook</c> OAuth scope.
+    /// Corresponds to <c>DELETE /webhooks/{webhookId}</c>.
+    /// </summary>
+    Task DeleteWebhookAsync(string webhookId, CancellationToken cancellationToken = default);
 }
