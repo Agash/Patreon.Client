@@ -115,6 +115,21 @@ public interface IPatreonApiClient
         IEnumerable<string>? tierFields = null,
         CancellationToken cancellationToken = default);
 
+    // -- Benefits --
+
+    /// <summary>
+    /// Returns all benefits for a campaign (side-loaded from the campaign resource).
+    /// Corresponds to <c>GET /campaigns/{campaignId}?include=benefits</c>.
+    /// </summary>
+    /// <param name="campaignId">The Patreon campaign ID.</param>
+    /// <param name="benefitFields">Optional set of benefit attribute fields to include.</param>
+    /// <param name="cancellationToken">A token that may be used to cancel the operation.</param>
+    /// <returns>A read-only list of benefit resources, or <see langword="null"/> if not available.</returns>
+    Task<IReadOnlyList<JsonApiResource<BenefitAttributes>>?> GetCampaignBenefitsAsync(
+        string campaignId,
+        IEnumerable<string>? benefitFields = null,
+        CancellationToken cancellationToken = default);
+
     // -- Webhooks --
 
     /// <summary>

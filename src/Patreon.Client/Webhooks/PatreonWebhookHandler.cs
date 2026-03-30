@@ -98,6 +98,7 @@ public sealed class PatreonWebhookHandler
             ResourceId = doc?.Data?.Id ?? string.Empty,
             ResourceType = doc?.Data?.Type ?? "member",
             Document = doc,
+            EntitledTierIds = ExtractEntitledTierIds(doc?.Data?.Relationships),
         };
     }
 
@@ -112,7 +113,40 @@ public sealed class PatreonWebhookHandler
             ResourceId = doc?.Data?.Id ?? string.Empty,
             ResourceType = doc?.Data?.Type ?? "member",
             Document = doc,
+            EntitledTierIds = ExtractEntitledTierIds(doc?.Data?.Relationships),
         };
+    }
+
+    /// <summary>
+    /// Extracts the <c>currently_entitled_tiers</c> IDs from a member resource's relationships element.
+    /// </summary>
+    private static IReadOnlyList<string> ExtractEntitledTierIds(JsonElement? relationships)
+    {
+        if (relationships is null)
+            return [];
+
+        if (!relationships.Value.TryGetProperty("currently_entitled_tiers", out JsonElement tiersRel))
+            return [];
+
+        if (!tiersRel.TryGetProperty("data", out JsonElement tierData)
+            || tierData.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        List<string> ids = [];
+        foreach (JsonElement item in tierData.EnumerateArray())
+        {
+            if (item.TryGetProperty("id", out JsonElement idElem)
+                && idElem.ValueKind == JsonValueKind.String)
+            {
+                string? id = idElem.GetString();
+                if (!string.IsNullOrEmpty(id))
+                    ids.Add(id);
+            }
+        }
+
+        return ids;
     }
 
     private PatreonPostWebhookEvent BuildPostEvent(string eventType, byte[] body)

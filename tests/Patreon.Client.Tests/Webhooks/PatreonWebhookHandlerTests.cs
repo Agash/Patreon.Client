@@ -359,5 +359,72 @@ public sealed class PatreonWebhookHandlerTests
         Assert.NotNull(tier);
         Assert.Equal("Gold Tier", tier.Title);
         Assert.Equal(1000, tier.AmountCents);
+
+        // EntitledTierIds extracted at parse time
+        Assert.Single(member.EntitledTierIds);
+        Assert.Equal("tier-gold", member.EntitledTierIds[0]);
+    }
+
+    [Fact]
+    public async Task HandleAsync_PledgeEvent_ExtractsEntitledTierIds()
+    {
+        string body = $$"""
+            {
+              "data": {
+                "id": "member-pledge",
+                "type": "member",
+                "attributes": {
+                  "full_name": "Bob",
+                  "patron_status": "active_patron",
+                  "currently_entitled_amount_cents": 2500,
+                  "will_pay_amount_cents": 2500
+                },
+                "relationships": {
+                  "currently_entitled_tiers": {
+                    "data": [
+                      { "type": "tier", "id": "tier-silver" },
+                      { "type": "tier", "id": "tier-gold" }
+                    ]
+                  }
+                }
+              }
+            }
+            """;
+
+        WebhookHandleResult<PatreonWebhookEvent> result =
+            await _handler.HandleAsync(BuildRequest(body, Secret, "members:pledge:create"), Options);
+
+        Assert.True(result.IsAuthenticated);
+        Assert.True(result.IsKnownEvent);
+
+        PatreonPledgeWebhookEvent pledge = Assert.IsType<PatreonPledgeWebhookEvent>(result.Event);
+        Assert.Equal(2, pledge.EntitledTierIds.Count);
+        Assert.Contains("tier-silver", pledge.EntitledTierIds);
+        Assert.Contains("tier-gold", pledge.EntitledTierIds);
+    }
+
+    [Fact]
+    public async Task HandleAsync_MemberEvent_NoTierRelationship_EntitledTierIdsIsEmpty()
+    {
+        string body = """
+            {
+              "data": {
+                "id": "member-no-tiers",
+                "type": "member",
+                "attributes": {
+                  "full_name": "Charlie",
+                  "patron_status": "active_patron",
+                  "currently_entitled_amount_cents": 0
+                }
+              }
+            }
+            """;
+
+        WebhookHandleResult<PatreonWebhookEvent> result =
+            await _handler.HandleAsync(BuildRequest(body, Secret, "members:update"), Options);
+
+        Assert.True(result.IsKnownEvent);
+        PatreonMemberWebhookEvent member = Assert.IsType<PatreonMemberWebhookEvent>(result.Event);
+        Assert.Empty(member.EntitledTierIds);
     }
 }

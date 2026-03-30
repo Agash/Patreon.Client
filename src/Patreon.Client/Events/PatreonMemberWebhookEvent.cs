@@ -23,4 +23,11 @@ public sealed record PatreonMemberWebhookEvent : PatreonWebhookEvent
 
     /// <summary>Convenience accessor for the primary resource attributes.</summary>
     public MemberAttributes? Attributes => Document?.Data?.Attributes;
+
+    /// <summary>
+    /// Gets the IDs of the tiers the member is currently entitled to.
+    /// Extracted from <c>data.relationships.currently_entitled_tiers.data[].id</c>
+    /// at parse time so callers do not need to navigate the raw JSON.
+    /// </summary>
+    public IReadOnlyList<string> EntitledTierIds { get; init; } = [];
 }

@@ -58,4 +58,36 @@ public sealed class CampaignAttributes
     /// <summary>Gets the campaign's vanity URL segment.</summary>
     [JsonPropertyName("vanity")]
     public string? Vanity { get; init; }
+
+    /// <summary>Gets the pay-per-name label used when the campaign charges per creation (e.g. "video").</summary>
+    [JsonPropertyName("pay_per_name")]
+    public string? PayPerName { get; init; }
+
+    /// <summary>Gets the URL of the main video for the campaign, if set.</summary>
+    [JsonPropertyName("main_video_url")]
+    public string? MainVideoUrl { get; init; }
+
+    /// <summary>Gets the URL of the thank-you video shown after pledging, if set.</summary>
+    [JsonPropertyName("thanks_video_url")]
+    public string? ThanksVideoUrl { get; init; }
+
+    /// <summary>Gets the thank-you message shown after pledging, if set.</summary>
+    [JsonPropertyName("thanks_msg")]
+    public string? ThanksMsg { get; init; }
+
+    /// <summary>Gets the Google Analytics tracking ID configured for this campaign, if any.</summary>
+    [JsonPropertyName("google_analytics_id")]
+    public string? GoogleAnalyticsId { get; init; }
+
+    /// <summary>Gets a value indicating whether the campaign has an RSS feed enabled.</summary>
+    [JsonPropertyName("has_rss")]
+    public bool HasRss { get; init; }
+
+    /// <summary>Gets the RSS feed title, if RSS is enabled.</summary>
+    [JsonPropertyName("rss_feed_title")]
+    public string? RssFeedTitle { get; init; }
+
+    /// <summary>Gets the RSS artwork image URL, if RSS is enabled.</summary>
+    [JsonPropertyName("rss_artwork_url")]
+    public string? RssArtworkUrl { get; init; }
 }

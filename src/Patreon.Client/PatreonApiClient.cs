@@ -193,6 +193,63 @@ public sealed class PatreonApiClient : IPatreonApiClient
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<JsonApiResource<BenefitAttributes>>?> GetCampaignBenefitsAsync(
+        string campaignId,
+        IEnumerable<string>? benefitFields = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(campaignId);
+        string url = BuildUrl(
+            $"campaigns/{Uri.EscapeDataString(campaignId)}",
+            "campaign",
+            fields: null,
+            include: ["benefits"]);
+
+        string[]? benefitFieldArr = benefitFields?.ToArray();
+        if (benefitFieldArr is { Length: > 0 })
+        {
+            url += $"&fields[benefit]={Uri.EscapeDataString(string.Join(",", benefitFieldArr))}";
+        }
+
+        JsonApiDocument<CampaignAttributes>? doc =
+            await GetAsync<JsonApiDocument<CampaignAttributes>>(url, cancellationToken)
+                .ConfigureAwait(false);
+
+        if (doc?.Included is null)
+            return null;
+
+        List<JsonApiResource<BenefitAttributes>> benefits = [];
+        foreach (JsonElement item in doc.Included)
+        {
+            if (!item.TryGetProperty("type", out JsonElement typeElem)
+                || typeElem.GetString() != "benefit")
+            {
+                continue;
+            }
+
+            string benefitId = item.TryGetProperty("id", out JsonElement idElem)
+                ? idElem.GetString() ?? string.Empty
+                : string.Empty;
+
+            BenefitAttributes? attrs = null;
+            if (item.TryGetProperty("attributes", out JsonElement attrsElem))
+            {
+                try { attrs = attrsElem.Deserialize<BenefitAttributes>(s_jsonOptions); }
+                catch (JsonException) { }
+            }
+
+            benefits.Add(new JsonApiResource<BenefitAttributes>
+            {
+                Id = benefitId,
+                Type = "benefit",
+                Attributes = attrs,
+            });
+        }
+
+        return benefits;
+    }
+
+    /// <inheritdoc />
     public Task<JsonApiCollectionDocument<WebhookAttributes>?> GetWebhooksAsync(
         CancellationToken cancellationToken = default) =>
         GetAsync<JsonApiCollectionDocument<WebhookAttributes>>("webhooks", cancellationToken);
