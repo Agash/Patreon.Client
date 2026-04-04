@@ -4,7 +4,7 @@
     <IsPackable>true</IsPackable>
     <PackageId>Patreon.Client</PackageId>
     <Title>Patreon.Client</Title>
-    <Description>Modern .NET 10 Patreon API v2 client library with webhook support.</Description>
+    <Description>Modern .NET 10 Patreon API v2 client library with full webhook support, JSON:API relationship resolution, and automatic webhook management.</Description>
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>

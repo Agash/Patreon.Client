@@ -4,7 +4,7 @@
     <IsPackable>true</IsPackable>
     <PackageId>Patreon.Client.DependencyInjection</PackageId>
     <Title>Patreon.Client.DependencyInjection</Title>
-    <Description>Microsoft.Extensions.DependencyInjection registration helpers for Patreon.Client.</Description>
+    <Description>Microsoft.Extensions.DependencyInjection registration extensions for Patreon.Client.</Description>
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>

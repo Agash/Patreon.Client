@@ -1,7 +1,8 @@
 # Patreon.Client
 
-[![NuGet](https://img.shields.io/nuget/v/Patreon.Client.svg)](https://www.nuget.org/packages/Patreon.Client/)
-[![CI](https://github.com/Agash/Patreon.Client/actions/workflows/ci.yml/badge.svg)](https://github.com/Agash/Patreon.Client/actions/workflows/ci.yml)
+[![NuGet](https://img.shields.io/nuget/v/Patreon.Client.svg?include_prereleases)](https://www.nuget.org/packages/Patreon.Client/)
+[![CI](https://github.com/Agash/Patreon.Client/actions/workflows/build.yml/badge.svg)](https://github.com/Agash/Patreon.Client/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.txt)
 
 A modern .NET 10 client library for the **Patreon API v2** with full webhook support, JSON:API relationship resolution, and automatic webhook management.
 

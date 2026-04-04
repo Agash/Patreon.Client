@@ -4,7 +4,7 @@
     <IsPackable>true</IsPackable>
     <PackageId>Patreon.Client.AspNetCore</PackageId>
     <Title>Patreon.Client.AspNetCore</Title>
-    <Description>ASP.NET Core adapter package for Patreon.Client.</Description>
+    <Description>ASP.NET Core minimal API endpoint extensions for Patreon.Client webhook ingestion.</Description>
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
