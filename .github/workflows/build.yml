@@ -1,0 +1,107 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: Build, Test, and Publish Patreon.Client
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  NuGetDirectory: ${{ github.workspace }}/nuget
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  build_and_test:
+    name: Build, Test, and Pack
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0   # MinVer needs full history
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+
+    - name: Restore dependencies
+      run: dotnet restore Patreon.Client.slnx
+
+    - name: Build solution
+      run: dotnet build Patreon.Client.slnx --configuration Release --no-restore
+
+    - name: Run unit tests
+      run: dotnet test tests/Patreon.Client.Tests/Patreon.Client.Tests.csproj --configuration Release --no-build --verbosity normal
+
+    - name: Pack packages
+      if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+      run: dotnet pack Patreon.Client.slnx --configuration Release --no-build --output ${{ env.NuGetDirectory }}
+
+    - name: Verify expected packages
+      if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+      run: |
+        $expected = @(
+          'Patreon.Client',
+          'Patreon.Client.DependencyInjection',
+          'Patreon.Client.AspNetCore'
+        )
+        $packed = Get-ChildItem "${{ env.NuGetDirectory }}" -Filter *.nupkg |
+          ForEach-Object { $_.Name -replace '\.\d+.*\.nupkg$', '' }
+        $missing = $expected | Where-Object { $_ -notin $packed }
+        if ($missing.Count -gt 0) {
+          throw "Missing expected packages: $($missing -join ', ')"
+        }
+        Write-Host "All $($expected.Count) expected packages verified."
+
+    - name: Upload package artifact
+      if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-package
+        if-no-files-found: error
+        retention-days: 7
+        path: ${{ env.NuGetDirectory }}/*.nupkg
+
+  publish_nuget:
+    name: Publish NuGet Packages
+    needs: [ build_and_test ]
+    if: (github.event_name == 'release' && github.event.action == 'published') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+    - name: Download package artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: nuget-package
+        path: ${{ env.NuGetDirectory }}
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+
+    - name: NuGet login
+      id: login
+      uses: NuGet/login@v1
+      with:
+        user: Agash
+
+    - name: Publish packages
+      run: |
+        foreach ($file in (Get-ChildItem "${{ env.NuGetDirectory }}" -Recurse -Include *.nupkg)) {
+          Write-Host "Pushing package: $($file.FullName)"
+          dotnet nuget push $file --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        }
