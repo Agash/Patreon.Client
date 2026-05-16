@@ -171,7 +171,7 @@ public sealed class PatreonWebhookHandler
 
         try
         {
-            using JsonDocument doc = JsonDocument.Parse(body);
+            using var doc = JsonDocument.Parse(body);
             if (doc.RootElement.TryGetProperty("data", out JsonElement dataElem))
             {
                 if (dataElem.TryGetProperty("id", out JsonElement idElem))

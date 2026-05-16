@@ -665,10 +665,9 @@ internal static class SampleApplication
 
             case "Unpause a webhook":
             {
-                string[] pausedIds = webhooks!.Data!
+                string[] pausedIds = [.. webhooks!.Data!
                     .Where(w => w.Attributes?.Paused is true)
-                    .Select(w => w.Id)
-                    .ToArray();
+                    .Select(w => w.Id)];
 
                 if (pausedIds.Length == 0)
                 {
@@ -696,7 +695,7 @@ internal static class SampleApplication
 
             case "Delete a webhook":
             {
-                string[] webhookIds = webhooks!.Data!.Select(w => w.Id).ToArray();
+                string[] webhookIds = [.. webhooks!.Data!.Select(w => w.Id)];
 
                 string webhookId = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
