@@ -1,4 +1,6 @@
+#pragma warning disable IDE0005 // Required for net10.0 (PostAsJsonAsync/JsonContent); flagged redundant only on net11.0.
 using System.Net.Http.Json;
+#pragma warning restore IDE0005
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -12,9 +14,9 @@ namespace Patreon.Client;
 /// <summary>
 /// Default <see cref="IPatreonApiClient"/> implementation backed by an <see cref="HttpClient"/>.
 /// </summary>
-public sealed class PatreonApiClient : IPatreonApiClient
+public sealed partial class PatreonApiClient : IPatreonApiClient
 {
-    private static readonly JsonSerializerOptions s_jsonOptions = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly HttpClient _httpClient;
     private readonly ILogger<PatreonApiClient> _logger;
@@ -159,7 +161,9 @@ public sealed class PatreonApiClient : IPatreonApiClient
                 .ConfigureAwait(false);
 
         if (doc?.Included is null)
+        {
             return null;
+        }
 
         List<JsonApiResource<TierAttributes>> tiers = [];
         foreach (JsonElement item in doc.Included)
@@ -177,8 +181,13 @@ public sealed class PatreonApiClient : IPatreonApiClient
             TierAttributes? attrs = null;
             if (item.TryGetProperty("attributes", out JsonElement attrsElem))
             {
-                try { attrs = attrsElem.Deserialize<TierAttributes>(s_jsonOptions); }
-                catch (JsonException) { }
+                try
+                {
+                    attrs = attrsElem.Deserialize<TierAttributes>(_jsonOptions);
+                }
+                catch (JsonException)
+                {
+                }
             }
 
             tiers.Add(new JsonApiResource<TierAttributes>
@@ -216,7 +225,9 @@ public sealed class PatreonApiClient : IPatreonApiClient
                 .ConfigureAwait(false);
 
         if (doc?.Included is null)
+        {
             return null;
+        }
 
         List<JsonApiResource<BenefitAttributes>> benefits = [];
         foreach (JsonElement item in doc.Included)
@@ -234,8 +245,13 @@ public sealed class PatreonApiClient : IPatreonApiClient
             BenefitAttributes? attrs = null;
             if (item.TryGetProperty("attributes", out JsonElement attrsElem))
             {
-                try { attrs = attrsElem.Deserialize<BenefitAttributes>(s_jsonOptions); }
-                catch (JsonException) { }
+                try
+                {
+                    attrs = attrsElem.Deserialize<BenefitAttributes>(_jsonOptions);
+                }
+                catch (JsonException)
+                {
+                }
             }
 
             benefits.Add(new JsonApiResource<BenefitAttributes>
@@ -278,16 +294,14 @@ public sealed class PatreonApiClient : IPatreonApiClient
 
         if (!response.IsSuccessStatusCode)
         {
-            _logger.LogWarning(
-                "Patreon API POST webhooks returned HTTP {StatusCode}.",
-                (int)response.StatusCode);
+            LogPostWebhooksFailed(_logger, (int)response.StatusCode);
             return null;
         }
 
         using System.IO.Stream stream =
             await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         return await JsonSerializer
-            .DeserializeAsync<JsonApiDocument<WebhookAttributes>>(stream, s_jsonOptions, cancellationToken)
+            .DeserializeAsync<JsonApiDocument<WebhookAttributes>>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -302,9 +316,20 @@ public sealed class PatreonApiClient : IPatreonApiClient
         ArgumentException.ThrowIfNullOrEmpty(webhookId);
 
         Dictionary<string, object?> attributes = [];
-        if (paused.HasValue) attributes["paused"] = paused.Value;
-        if (uri is not null) attributes["uri"] = uri;
-        if (triggers is not null) attributes["triggers"] = triggers;
+        if (paused.HasValue)
+        {
+            attributes["paused"] = paused.Value;
+        }
+
+        if (uri is not null)
+        {
+            attributes["uri"] = uri;
+        }
+
+        if (triggers is not null)
+        {
+            attributes["triggers"] = triggers;
+        }
 
         object payload = new
         {
@@ -329,17 +354,14 @@ public sealed class PatreonApiClient : IPatreonApiClient
 
         if (!response.IsSuccessStatusCode)
         {
-            _logger.LogWarning(
-                "Patreon API PATCH webhooks/{WebhookId} returned HTTP {StatusCode}.",
-                webhookId,
-                (int)response.StatusCode);
+            LogPatchWebhookFailed(_logger, webhookId, (int)response.StatusCode);
             return null;
         }
 
         using System.IO.Stream stream =
             await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         return await JsonSerializer
-            .DeserializeAsync<JsonApiDocument<WebhookAttributes>>(stream, s_jsonOptions, cancellationToken)
+            .DeserializeAsync<JsonApiDocument<WebhookAttributes>>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -354,10 +376,7 @@ public sealed class PatreonApiClient : IPatreonApiClient
 
         if (!response.IsSuccessStatusCode)
         {
-            _logger.LogWarning(
-                "Patreon API DELETE webhooks/{WebhookId} returned HTTP {StatusCode}.",
-                webhookId,
-                (int)response.StatusCode);
+            LogDeleteWebhookFailed(_logger, webhookId, (int)response.StatusCode);
         }
     }
 
@@ -368,17 +387,14 @@ public sealed class PatreonApiClient : IPatreonApiClient
 
         if (!response.IsSuccessStatusCode)
         {
-            _logger.LogWarning(
-                "Patreon API request to {Url} returned HTTP {StatusCode}.",
-                url,
-                (int)response.StatusCode);
+            LogRequestFailed(_logger, url, (int)response.StatusCode);
             return default;
         }
 
         using System.IO.Stream stream =
             await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
-        return await JsonSerializer.DeserializeAsync<T>(stream, s_jsonOptions, cancellationToken)
+        return await JsonSerializer.DeserializeAsync<T>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -394,20 +410,20 @@ public sealed class PatreonApiClient : IPatreonApiClient
         string[]? fieldArr = fields?.ToArray();
         if (fieldArr is { Length: > 0 })
         {
-            sb.Append(hasQuery ? '&' : '?');
-            sb.Append("fields[");
-            sb.Append(resourceType);
-            sb.Append("]=");
-            sb.Append(Uri.EscapeDataString(string.Join(",", fieldArr)));
+            _ = sb.Append(hasQuery ? '&' : '?')
+                .Append("fields[")
+                .Append(resourceType)
+                .Append("]=")
+                .Append(Uri.EscapeDataString(string.Join(",", fieldArr)));
             hasQuery = true;
         }
 
         string[]? includeArr = include?.ToArray();
         if (includeArr is { Length: > 0 })
         {
-            sb.Append(hasQuery ? '&' : '?');
-            sb.Append("include=");
-            sb.Append(Uri.EscapeDataString(string.Join(",", includeArr)));
+            _ = sb.Append(hasQuery ? '&' : '?')
+                .Append("include=")
+                .Append(Uri.EscapeDataString(string.Join(",", includeArr)));
         }
 
         return sb.ToString();
@@ -427,33 +443,33 @@ public sealed class PatreonApiClient : IPatreonApiClient
         string[]? fieldArr = fields?.ToArray();
         if (fieldArr is { Length: > 0 })
         {
-            sb.Append(hasQuery ? '&' : '?');
-            sb.Append("fields[");
-            sb.Append(resourceType);
-            sb.Append("]=");
-            sb.Append(Uri.EscapeDataString(string.Join(",", fieldArr)));
+            _ = sb.Append(hasQuery ? '&' : '?')
+                .Append("fields[")
+                .Append(resourceType)
+                .Append("]=")
+                .Append(Uri.EscapeDataString(string.Join(",", fieldArr)));
             hasQuery = true;
         }
 
         string[]? includeArr = include?.ToArray();
         if (includeArr is { Length: > 0 })
         {
-            sb.Append(hasQuery ? '&' : '?');
-            sb.Append("include=");
-            sb.Append(Uri.EscapeDataString(string.Join(",", includeArr)));
+            _ = sb.Append(hasQuery ? '&' : '?')
+                .Append("include=")
+                .Append(Uri.EscapeDataString(string.Join(",", includeArr)));
             hasQuery = true;
         }
 
-        sb.Append(hasQuery ? '&' : '?');
-        sb.Append("page[count]=");
-        sb.Append(pageSize);
+        _ = sb.Append(hasQuery ? '&' : '?')
+            .Append("page[count]=")
+            .Append(pageSize);
         hasQuery = true;
 
         if (!string.IsNullOrEmpty(cursor))
         {
-            sb.Append(hasQuery ? '&' : '?');
-            sb.Append("page[cursor]=");
-            sb.Append(Uri.EscapeDataString(cursor));
+            _ = sb.Append(hasQuery ? '&' : '?')
+                .Append("page[cursor]=")
+                .Append(Uri.EscapeDataString(cursor));
         }
 
         return sb.ToString();
@@ -471,4 +487,24 @@ public sealed class PatreonApiClient : IPatreonApiClient
             $"campaigns/{Uri.EscapeDataString(campaignId)}/members",
             resourceType, fields, include, pageSize, cursor);
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Patreon API POST webhooks returned HTTP {StatusCode}.")]
+    private static partial void LogPostWebhooksFailed(ILogger logger, int statusCode);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Patreon API PATCH webhooks/{WebhookId} returned HTTP {StatusCode}.")]
+    private static partial void LogPatchWebhookFailed(ILogger logger, string webhookId, int statusCode);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Patreon API DELETE webhooks/{WebhookId} returned HTTP {StatusCode}.")]
+    private static partial void LogDeleteWebhookFailed(ILogger logger, string webhookId, int statusCode);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Patreon API request to {Url} returned HTTP {StatusCode}.")]
+    private static partial void LogRequestFailed(ILogger logger, string url, int statusCode);
 }

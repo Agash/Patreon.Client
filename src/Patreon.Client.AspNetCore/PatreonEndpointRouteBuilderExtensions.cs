@@ -40,7 +40,7 @@ public static class PatreonEndpointRouteBuilderExtensions
 
         configure(options);
 
-        return endpoints.MapPost(pattern, async (HttpContext context) =>
+        return endpoints.MapPost(pattern, async context =>
         {
             PatreonWebhookHandler handler = context.RequestServices.GetRequiredService<PatreonWebhookHandler>();
 

@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 using Patreon.Client.Abstractions;
 using Patreon.Client.Http;
 using Patreon.Client.Options;
@@ -26,7 +25,7 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configure);
 
-        services.Configure(configure);
+        _ = services.Configure(configure);
         return services.AddPatreonClientCore();
     }
 
@@ -44,11 +43,11 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddPatreonClientCore(this IServiceCollection services)
     {
-        services.AddOptions<PatreonClientOptions>();
+        _ = services.AddOptions<PatreonClientOptions>();
 
         services.TryAddTransient<BearerTokenHandler>();
 
-        services
+        _ = services
             .AddHttpClient<IPatreonApiClient, PatreonApiClient>(static (sp, client) =>
             {
                 client.BaseAddress = new Uri("https://www.patreon.com/api/oauth2/v2/");

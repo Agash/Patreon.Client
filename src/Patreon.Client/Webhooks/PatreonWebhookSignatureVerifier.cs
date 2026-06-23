@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -30,6 +31,10 @@ public sealed class PatreonWebhookSignatureVerifier
     /// <see langword="true"/> when the received signature matches the computed digest;
     /// otherwise <see langword="false"/>.
     /// </returns>
+    [SuppressMessage(
+        "Performance",
+        "CA1822:Mark members as static",
+        Justification = "Intentionally an instance method: resolved and consumed via DI.")]
     public bool Verify(
         byte[] body,
         IReadOnlyDictionary<string, string[]> headers,

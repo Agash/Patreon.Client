@@ -56,7 +56,7 @@ public sealed class UserAttributes
     /// Gets the user's connected social platform accounts as raw JSON.
     /// The structure is a dictionary keyed by platform name (e.g. <c>youtube</c>, <c>twitter</c>,
     /// <c>twitch</c>, <c>discord</c>) with per-platform <c>url</c> and <c>user_id</c> fields.
-    /// Use <see cref="JsonElement.TryGetProperty"/> to access individual platforms.
+    /// Use <see cref="JsonElement.TryGetProperty(string, out JsonElement)"/> to access individual platforms.
     /// </summary>
     [JsonPropertyName("social_connections")]
     public JsonElement? SocialConnections { get; init; }

@@ -23,9 +23,9 @@ namespace Patreon.Client.JsonApi;
 /// </remarks>
 public sealed class JsonApiIncludedIndex
 {
-    private static readonly JsonSerializerOptions s_options = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
 
-    private readonly IReadOnlyDictionary<(string Type, string Id), JsonElement> _index;
+    private readonly Dictionary<(string Type, string Id), JsonElement> _index;
 
     /// <summary>
     /// Gets the number of included resources indexed.
@@ -115,7 +115,7 @@ public sealed class JsonApiIncludedIndex
 
         try
         {
-            return JsonSerializer.Deserialize<T>(attrsElem, options ?? s_options);
+            return JsonSerializer.Deserialize<T>(attrsElem, options ?? _options);
         }
         catch (JsonException)
         {

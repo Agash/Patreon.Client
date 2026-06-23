@@ -50,7 +50,7 @@ public static class HttpContextWebhookRequestMapper
         return new WebhookRequest
         {
             Method = context.Request.Method,
-            Path = context.Request.Path.HasValue ? context.Request.Path.Value! : "/",
+            Path = context.Request.Path.HasValue ? context.Request.Path.Value : "/",
             QueryString = context.Request.QueryString.HasValue ? context.Request.QueryString.Value : null,
             ContentType = context.Request.ContentType,
             Headers = headers,

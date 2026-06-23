@@ -12,7 +12,7 @@ namespace Patreon.Client.Webhooks;
 /// </summary>
 public sealed class PatreonWebhookHandler
 {
-    private static readonly JsonSerializerOptions s_jsonOptions = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly PatreonWebhookSignatureVerifier _verifier;
 
@@ -35,10 +35,14 @@ public sealed class PatreonWebhookHandler
         cancellationToken.ThrowIfCancellationRequested();
 
         if (!string.Equals(request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+        {
             return Task.FromResult(Failure(405, false, false, "Patreon webhooks must use POST."));
+        }
 
         if (!request.HasContentType("application/json"))
+        {
             return Task.FromResult(Failure(400, false, false, "Expected application/json content type."));
+        }
 
         byte[] body = request.Body ?? [];
 
@@ -87,10 +91,10 @@ public sealed class PatreonWebhookHandler
         }
     }
 
-    private PatreonMemberWebhookEvent BuildMemberEvent(string eventType, byte[] body)
+    private static PatreonMemberWebhookEvent BuildMemberEvent(string eventType, byte[] body)
     {
         JsonApiDocument<MemberAttributes>? doc =
-            JsonSerializer.Deserialize<JsonApiDocument<MemberAttributes>>(body, s_jsonOptions);
+            JsonSerializer.Deserialize<JsonApiDocument<MemberAttributes>>(body, _jsonOptions);
 
         return new PatreonMemberWebhookEvent
         {
@@ -102,10 +106,10 @@ public sealed class PatreonWebhookHandler
         };
     }
 
-    private PatreonPledgeWebhookEvent BuildPledgeEvent(string eventType, byte[] body)
+    private static PatreonPledgeWebhookEvent BuildPledgeEvent(string eventType, byte[] body)
     {
         JsonApiDocument<MemberAttributes>? doc =
-            JsonSerializer.Deserialize<JsonApiDocument<MemberAttributes>>(body, s_jsonOptions);
+            JsonSerializer.Deserialize<JsonApiDocument<MemberAttributes>>(body, _jsonOptions);
 
         return new PatreonPledgeWebhookEvent
         {
@@ -120,13 +124,17 @@ public sealed class PatreonWebhookHandler
     /// <summary>
     /// Extracts the <c>currently_entitled_tiers</c> IDs from a member resource's relationships element.
     /// </summary>
-    private static IReadOnlyList<string> ExtractEntitledTierIds(JsonElement? relationships)
+    private static List<string> ExtractEntitledTierIds(JsonElement? relationships)
     {
         if (relationships is null)
+        {
             return [];
+        }
 
         if (!relationships.Value.TryGetProperty("currently_entitled_tiers", out JsonElement tiersRel))
+        {
             return [];
+        }
 
         if (!tiersRel.TryGetProperty("data", out JsonElement tierData)
             || tierData.ValueKind != JsonValueKind.Array)
@@ -142,17 +150,19 @@ public sealed class PatreonWebhookHandler
             {
                 string? id = idElem.GetString();
                 if (!string.IsNullOrEmpty(id))
+                {
                     ids.Add(id);
+                }
             }
         }
 
         return ids;
     }
 
-    private PatreonPostWebhookEvent BuildPostEvent(string eventType, byte[] body)
+    private static PatreonPostWebhookEvent BuildPostEvent(string eventType, byte[] body)
     {
         JsonApiDocument<PostAttributes>? doc =
-            JsonSerializer.Deserialize<JsonApiDocument<PostAttributes>>(body, s_jsonOptions);
+            JsonSerializer.Deserialize<JsonApiDocument<PostAttributes>>(body, _jsonOptions);
 
         return new PatreonPostWebhookEvent
         {
@@ -175,9 +185,14 @@ public sealed class PatreonWebhookHandler
             if (doc.RootElement.TryGetProperty("data", out JsonElement dataElem))
             {
                 if (dataElem.TryGetProperty("id", out JsonElement idElem))
+                {
                     resourceId = idElem.GetString() ?? string.Empty;
+                }
+
                 if (dataElem.TryGetProperty("type", out JsonElement typeElem))
+                {
                     resourceType = typeElem.GetString() ?? string.Empty;
+                }
             }
         }
         catch (JsonException) { }
