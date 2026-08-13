@@ -4,26 +4,26 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="Agash.Webhook.Abstractions" Version="1.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.8" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.8" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.8" />
+    <PackageVersion Include="Agash.Webhook.Abstractions" Version="1.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.11" />
     <PackageVersion Include="MinVer" Version="7.0.0" />
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="2.0.5" />
   </ItemGroup>
 
   <!-- Sample packages -->
   <ItemGroup>
-    <PackageVersion Include="DevTunnels.Client" Version="0.1.0" />
-    <PackageVersion Include="Spectre.Console" Version="0.54.0" />
+    <PackageVersion Include="DevTunnels.Client" Version="1.1.0" />
+    <PackageVersion Include="Spectre.Console" Version="0.57.2" />
   </ItemGroup>
 
   <!-- Test packages -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.0" />
-    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="coverlet.collector" Version="10.0.1" />
   </ItemGroup>
 </Project>

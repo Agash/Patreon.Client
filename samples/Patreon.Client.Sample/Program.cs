@@ -1,5 +1,9 @@
 using System.Collections.Concurrent;
 using DevTunnels.Client;
+using DevTunnels.Client.Authentication;
+using DevTunnels.Client.Hosting;
+using DevTunnels.Client.Ports;
+using DevTunnels.Client.Tunnels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
