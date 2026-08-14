@@ -1,15 +1,16 @@
 using System.Text.Json;
 using Patreon.Client.JsonApi;
 using Patreon.Client.Models;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Patreon.Client.Tests.JsonApi;
 
+[TestClass]
 public sealed class JsonApiDocumentTests
 {
     private static readonly JsonSerializerOptions s_options = new(JsonSerializerDefaults.Web);
 
-    [Fact]
+    [TestMethod]
     public void DeserializeJsonApiDocumentWithMemberAttributes()
     {
         const string json = """
@@ -37,18 +38,18 @@ public sealed class JsonApiDocumentTests
         JsonApiDocument<MemberAttributes>? doc =
             JsonSerializer.Deserialize<JsonApiDocument<MemberAttributes>>(json, s_options);
 
-        Assert.NotNull(doc);
-        Assert.NotNull(doc.Data);
-        Assert.Equal("mem-1", doc.Data.Id);
-        Assert.Equal("member", doc.Data.Type);
-        Assert.NotNull(doc.Data.Attributes);
-        Assert.Equal("Alice", doc.Data.Attributes.FullName);
-        Assert.Equal("active_patron", doc.Data.Attributes.PatronStatus);
-        Assert.Equal(300, doc.Data.Attributes.CurrentlyEntitledAmountCents);
-        Assert.Equal(900, doc.Data.Attributes.CampaignLifetimeSupportCents);
+        Assert.IsNotNull(doc);
+        Assert.IsNotNull(doc.Data);
+        Assert.AreEqual("mem-1", doc.Data.Id);
+        Assert.AreEqual("member", doc.Data.Type);
+        Assert.IsNotNull(doc.Data.Attributes);
+        Assert.AreEqual("Alice", doc.Data.Attributes.FullName);
+        Assert.AreEqual("active_patron", doc.Data.Attributes.PatronStatus);
+        Assert.AreEqual(300, doc.Data.Attributes.CurrentlyEntitledAmountCents);
+        Assert.AreEqual(900, doc.Data.Attributes.CampaignLifetimeSupportCents);
     }
 
-    [Fact]
+    [TestMethod]
     public void DeserializeJsonApiCollectionDocumentWithCampaignAttributes()
     {
         const string json = """
@@ -78,21 +79,21 @@ public sealed class JsonApiDocumentTests
         JsonApiCollectionDocument<CampaignAttributes>? doc =
             JsonSerializer.Deserialize<JsonApiCollectionDocument<CampaignAttributes>>(json, s_options);
 
-        Assert.NotNull(doc);
-        Assert.NotNull(doc.Data);
-        Assert.Single(doc.Data);
+        Assert.IsNotNull(doc);
+        Assert.IsNotNull(doc.Data);
+        Assert.HasCount(1, doc.Data);
 
         JsonApiResource<CampaignAttributes> resource = doc.Data[0];
-        Assert.Equal("camp-99", resource.Id);
-        Assert.Equal("campaign", resource.Type);
-        Assert.NotNull(resource.Attributes);
-        Assert.Equal("My Art Campaign", resource.Attributes.Name);
-        Assert.Equal(42, resource.Attributes.PatronCount);
-        Assert.Equal("USD", resource.Attributes.Currency);
-        Assert.True(resource.Attributes.IsMonthly);
+        Assert.AreEqual("camp-99", resource.Id);
+        Assert.AreEqual("campaign", resource.Type);
+        Assert.IsNotNull(resource.Attributes);
+        Assert.AreEqual("My Art Campaign", resource.Attributes.Name);
+        Assert.AreEqual(42, resource.Attributes.PatronCount);
+        Assert.AreEqual("USD", resource.Attributes.Currency);
+        Assert.IsTrue(resource.Attributes.IsMonthly);
     }
 
-    [Fact]
+    [TestMethod]
     public void DeserializeJsonApiDocumentWithPaginationCursor()
     {
         const string json = """
@@ -110,15 +111,15 @@ public sealed class JsonApiDocumentTests
         JsonApiCollectionDocument<MemberAttributes>? doc =
             JsonSerializer.Deserialize<JsonApiCollectionDocument<MemberAttributes>>(json, s_options);
 
-        Assert.NotNull(doc);
-        Assert.NotNull(doc.Meta);
-        Assert.NotNull(doc.Meta.Pagination);
-        Assert.Equal(200, doc.Meta.Pagination.Total);
-        Assert.NotNull(doc.Meta.Pagination.Cursors);
-        Assert.Equal("cursor-abc123", doc.Meta.Pagination.Cursors.Next);
+        Assert.IsNotNull(doc);
+        Assert.IsNotNull(doc.Meta);
+        Assert.IsNotNull(doc.Meta.Pagination);
+        Assert.AreEqual(200, doc.Meta.Pagination.Total);
+        Assert.IsNotNull(doc.Meta.Pagination.Cursors);
+        Assert.AreEqual("cursor-abc123", doc.Meta.Pagination.Cursors.Next);
     }
 
-    [Fact]
+    [TestMethod]
     public void DeserializeJsonApiDocumentWithErrors()
     {
         const string json = """
@@ -138,11 +139,11 @@ public sealed class JsonApiDocumentTests
         JsonApiDocument<MemberAttributes>? doc =
             JsonSerializer.Deserialize<JsonApiDocument<MemberAttributes>>(json, s_options);
 
-        Assert.NotNull(doc);
-        Assert.Null(doc.Data);
-        Assert.NotNull(doc.Errors);
-        Assert.Single(doc.Errors);
-        Assert.Equal("UnauthorizedError", doc.Errors[0].CodeName);
-        Assert.Equal("401", doc.Errors[0].Status);
+        Assert.IsNotNull(doc);
+        Assert.IsNull(doc.Data);
+        Assert.IsNotNull(doc.Errors);
+        Assert.HasCount(1, doc.Errors);
+        Assert.AreEqual("UnauthorizedError", doc.Errors[0].CodeName);
+        Assert.AreEqual("401", doc.Errors[0].Status);
     }
 }
