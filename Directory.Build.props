@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
@@ -15,6 +15,7 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Agash/Patreon.Client</RepositoryUrl>
+    <PackageTags>patreon;patreon-api;memberships;creator-economy;jsonapi;webhooks;api-client;dotnet;csharp</PackageTags>
     <PackageProjectUrl>https://github.com/Agash/Patreon.Client</PackageProjectUrl>
     <GenerateDocumentationFile Condition="'$(IsPackable)' == 'true'">true</GenerateDocumentationFile>
     <PackageReadmeFile Condition="'$(IsPackable)' == 'true'">README.md</PackageReadmeFile>
