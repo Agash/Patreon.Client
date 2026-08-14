@@ -12,8 +12,6 @@ namespace Patreon.Client.Webhooks;
 /// </summary>
 public sealed class PatreonWebhookHandler
 {
-    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
-
     private readonly PatreonWebhookSignatureVerifier _verifier;
 
     /// <summary>Initializes a new instance of <see cref="PatreonWebhookHandler"/>.</summary>
@@ -94,7 +92,7 @@ public sealed class PatreonWebhookHandler
     private static PatreonMemberWebhookEvent BuildMemberEvent(string eventType, byte[] body)
     {
         JsonApiDocument<MemberAttributes>? doc =
-            JsonSerializer.Deserialize<JsonApiDocument<MemberAttributes>>(body, _jsonOptions);
+            JsonSerializer.Deserialize(body, PatreonJsonContext.Default.JsonApiDocumentMemberAttributes);
 
         return new PatreonMemberWebhookEvent
         {
@@ -109,7 +107,7 @@ public sealed class PatreonWebhookHandler
     private static PatreonPledgeWebhookEvent BuildPledgeEvent(string eventType, byte[] body)
     {
         JsonApiDocument<MemberAttributes>? doc =
-            JsonSerializer.Deserialize<JsonApiDocument<MemberAttributes>>(body, _jsonOptions);
+            JsonSerializer.Deserialize(body, PatreonJsonContext.Default.JsonApiDocumentMemberAttributes);
 
         return new PatreonPledgeWebhookEvent
         {
@@ -162,7 +160,7 @@ public sealed class PatreonWebhookHandler
     private static PatreonPostWebhookEvent BuildPostEvent(string eventType, byte[] body)
     {
         JsonApiDocument<PostAttributes>? doc =
-            JsonSerializer.Deserialize<JsonApiDocument<PostAttributes>>(body, _jsonOptions);
+            JsonSerializer.Deserialize(body, PatreonJsonContext.Default.JsonApiDocumentPostAttributes);
 
         return new PatreonPostWebhookEvent
         {

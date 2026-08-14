@@ -1,4 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Patreon.Client.JsonApi;
 
@@ -98,17 +100,11 @@ public sealed class JsonApiIncludedIndex
     /// <param name="id">The resource ID.</param>
     /// <param name="options">Optional custom JSON serializer options. Defaults to web-defaults.</param>
     /// <returns>The deserialized attributes, or <see langword="null"/>.</returns>
+    [RequiresUnreferencedCode("Resolves the contract for T by reflection. Use the JsonTypeInfo<T> overload to stay trim-safe.")]
+    [RequiresDynamicCode("Builds the contract for T at run time. Use the JsonTypeInfo<T> overload to stay AOT-safe.")]
     public T? TryGetAttributesAs<T>(string type, string id, JsonSerializerOptions? options = null)
     {
-        ArgumentException.ThrowIfNullOrEmpty(type);
-        ArgumentException.ThrowIfNullOrEmpty(id);
-
-        if (!_index.TryGetValue((type, id), out JsonElement element))
-        {
-            return default;
-        }
-
-        if (!element.TryGetProperty("attributes", out JsonElement attrsElem))
+        if (!TryGetAttributesElement(type, id, out JsonElement attrsElem))
         {
             return default;
         }
@@ -121,6 +117,49 @@ public sealed class JsonApiIncludedIndex
         {
             return default;
         }
+    }
+
+    /// <summary>
+    /// Attempts to deserialize the <c>attributes</c> object of an included resource as <typeparamref name="T"/>
+    /// using a source-generated contract. Returns <see langword="null"/> if the resource is not found or
+    /// deserialization fails.
+    /// </summary>
+    /// <typeparam name="T">The attributes type to deserialize into.</typeparam>
+    /// <param name="type">The JSON:API resource type.</param>
+    /// <param name="id">The resource ID.</param>
+    /// <param name="typeInfo">The source-generated contract for <typeparamref name="T"/>.</param>
+    /// <returns>The deserialized attributes, or <see langword="null"/>.</returns>
+    /// <remarks>
+    /// Prefer this overload: it is the only one that survives trimming and Native AOT publishing, because
+    /// the contract is generated at compile time instead of being reflected over at run time.
+    /// </remarks>
+    public T? TryGetAttributesAs<T>(string type, string id, JsonTypeInfo<T> typeInfo)
+    {
+        ArgumentNullException.ThrowIfNull(typeInfo);
+
+        if (!TryGetAttributesElement(type, id, out JsonElement attrsElem))
+        {
+            return default;
+        }
+
+        try
+        {
+            return attrsElem.Deserialize(typeInfo);
+        }
+        catch (JsonException)
+        {
+            return default;
+        }
+    }
+
+    private bool TryGetAttributesElement(string type, string id, out JsonElement attributes)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(type);
+        ArgumentException.ThrowIfNullOrEmpty(id);
+
+        attributes = default;
+        return _index.TryGetValue((type, id), out JsonElement element)
+            && element.TryGetProperty("attributes", out attributes);
     }
 
     /// <summary>
