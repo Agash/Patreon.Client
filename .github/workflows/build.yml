@@ -25,6 +25,12 @@ jobs:
     name: Build, Test, and Pack
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      # Signing the provenance statement for the packages this job produces. Stated explicitly
+      # because attestation needs more than the read-only default.
+      id-token: write
+      attestations: write
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
@@ -115,6 +121,14 @@ jobs:
         }
         Write-Host "All $($expected.Count) expected packages verified."
 
+    - name: Attest build provenance
+      # Records, in a signed statement GitHub hosts, which workflow and which commit produced these
+      # exact package files. Anyone who downloads the package can verify it came from this repository
+      # rather than from someone who republished it under the same name.
+      if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+      uses: actions/attest-build-provenance@v3
+      with:
+        subject-path: ${{ env.NuGetDirectory }}/*.nupkg
     - name: Upload package artifact
       if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
       uses: actions/upload-artifact@v7
