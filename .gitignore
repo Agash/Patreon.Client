@@ -17,3 +17,6 @@ nupkgs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Test run output (coverage reports)
+TestResults/
