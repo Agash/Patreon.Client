@@ -87,7 +87,7 @@ public sealed class PatreonWebhookHandlerTests
         Assert.IsTrue(result.IsKnownEvent);
         Assert.AreEqual(200, result.Response.StatusCode);
 
-        Assert.IsInstanceOfType<PatreonMemberWebhookEvent>(result.Event);
+        _ = Assert.IsInstanceOfType<PatreonMemberWebhookEvent>(result.Event);
         var member = (PatreonMemberWebhookEvent)result.Event;
         Assert.AreEqual("members:create", member.EventType);
         Assert.AreEqual("member-abc-123", member.ResourceId);
@@ -131,7 +131,7 @@ public sealed class PatreonWebhookHandlerTests
         Assert.IsTrue(result.IsKnownEvent);
         Assert.AreEqual(200, result.Response.StatusCode);
 
-        Assert.IsInstanceOfType<PatreonPledgeWebhookEvent>(result.Event);
+        _ = Assert.IsInstanceOfType<PatreonPledgeWebhookEvent>(result.Event);
         var pledge = (PatreonPledgeWebhookEvent)result.Event;
         Assert.AreEqual("members:pledge:update", pledge.EventType);
         Assert.AreEqual("member-pledge-456", pledge.ResourceId);
@@ -171,7 +171,7 @@ public sealed class PatreonWebhookHandlerTests
         Assert.IsTrue(result.IsKnownEvent);
         Assert.AreEqual(200, result.Response.StatusCode);
 
-        Assert.IsInstanceOfType<PatreonPostWebhookEvent>(result.Event);
+        _ = Assert.IsInstanceOfType<PatreonPostWebhookEvent>(result.Event);
         var post = (PatreonPostWebhookEvent)result.Event;
         Assert.AreEqual("posts:publish", post.EventType);
         Assert.AreEqual("post-789", post.ResourceId);
@@ -201,7 +201,7 @@ public sealed class PatreonWebhookHandlerTests
         Assert.IsFalse(result.IsKnownEvent);
         Assert.AreEqual(200, result.Response.StatusCode);
 
-        Assert.IsInstanceOfType<PatreonUnknownWebhookEvent>(result.Event);
+        _ = Assert.IsInstanceOfType<PatreonUnknownWebhookEvent>(result.Event);
         var unknown = (PatreonUnknownWebhookEvent)result.Event;
         Assert.AreEqual("some:future:event", unknown.EventType);
     }
@@ -346,7 +346,7 @@ public sealed class PatreonWebhookHandlerTests
         Assert.IsTrue(result.IsAuthenticated);
         Assert.IsTrue(result.IsKnownEvent);
 
-        Assert.IsInstanceOfType<PatreonMemberWebhookEvent>(result.Event);
+        _ = Assert.IsInstanceOfType<PatreonMemberWebhookEvent>(result.Event);
         var member = (PatreonMemberWebhookEvent)result.Event;
         Assert.IsNotNull(member.Document);
         Assert.IsNotNull(member.Document.Data);
@@ -403,7 +403,7 @@ public sealed class PatreonWebhookHandlerTests
         Assert.IsTrue(result.IsAuthenticated);
         Assert.IsTrue(result.IsKnownEvent);
 
-        Assert.IsInstanceOfType<PatreonPledgeWebhookEvent>(result.Event);
+        _ = Assert.IsInstanceOfType<PatreonPledgeWebhookEvent>(result.Event);
         var pledge = (PatreonPledgeWebhookEvent)result.Event;
         Assert.AreEqual(2, pledge.EntitledTierIds.Count);
         Assert.Contains("tier-silver", pledge.EntitledTierIds);
@@ -431,7 +431,7 @@ public sealed class PatreonWebhookHandlerTests
             await _handler.HandleAsync(BuildRequest(body, Secret, "members:update"), Options);
 
         Assert.IsTrue(result.IsKnownEvent);
-        Assert.IsInstanceOfType<PatreonMemberWebhookEvent>(result.Event);
+        _ = Assert.IsInstanceOfType<PatreonMemberWebhookEvent>(result.Event);
         var member = (PatreonMemberWebhookEvent)result.Event;
         Assert.IsEmpty(member.EntitledTierIds);
     }
