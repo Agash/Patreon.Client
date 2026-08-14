@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
     <IsAotCompatible>true</IsAotCompatible>
@@ -7,7 +7,6 @@
     <Title>Patreon.Client.DependencyInjection</Title>
     <Description>Microsoft.Extensions.DependencyInjection registration extensions for Patreon.Client.</Description>
     <MinVerTagPrefix>v</MinVerTagPrefix>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);IDE0130</NoWarn>
