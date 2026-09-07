@@ -21,7 +21,7 @@
 
   <!-- Test packages -->
   <ItemGroup>
-    <PackageVersion Include="MSTest" Version="4.3.3" />
-    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.10.0" />
+    <PackageVersion Include="MSTest" Version="4.4.0" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.11.0" />
   </ItemGroup>
 </Project>
