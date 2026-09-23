@@ -19,7 +19,8 @@ public interface IPatreonApiClient
     Task<JsonApiDocument<UserAttributes>?> GetIdentityAsync(
         IEnumerable<string>? fields = null,
         IEnumerable<string>? include = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Returns all campaigns owned by the currently authenticated creator.
@@ -32,7 +33,8 @@ public interface IPatreonApiClient
     Task<JsonApiCollectionDocument<CampaignAttributes>?> GetCampaignsAsync(
         IEnumerable<string>? fields = null,
         IEnumerable<string>? include = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Returns a single campaign by ID.
@@ -47,7 +49,8 @@ public interface IPatreonApiClient
         string campaignId,
         IEnumerable<string>? fields = null,
         IEnumerable<string>? include = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Returns all members of a campaign, transparently paging through cursor-based pagination.
@@ -64,7 +67,8 @@ public interface IPatreonApiClient
         IEnumerable<string>? fields = null,
         IEnumerable<string>? include = null,
         int pageSize = 20,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Returns a single member by ID.
@@ -79,7 +83,8 @@ public interface IPatreonApiClient
         string memberId,
         IEnumerable<string>? fields = null,
         IEnumerable<string>? include = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     // -- Posts --
 
@@ -92,7 +97,8 @@ public interface IPatreonApiClient
         IEnumerable<string>? fields = null,
         IEnumerable<string>? include = null,
         int pageSize = 20,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Returns a single post by ID.
@@ -102,7 +108,8 @@ public interface IPatreonApiClient
         string postId,
         IEnumerable<string>? fields = null,
         IEnumerable<string>? include = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     // -- Tiers --
 
@@ -113,7 +120,8 @@ public interface IPatreonApiClient
     Task<IReadOnlyList<JsonApiResource<TierAttributes>>?> GetCampaignTiersAsync(
         string campaignId,
         IEnumerable<string>? tierFields = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     // -- Benefits --
 
@@ -128,7 +136,8 @@ public interface IPatreonApiClient
     Task<IReadOnlyList<JsonApiResource<BenefitAttributes>>?> GetCampaignBenefitsAsync(
         string campaignId,
         IEnumerable<string>? benefitFields = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     // -- Webhooks --
 
@@ -138,7 +147,8 @@ public interface IPatreonApiClient
     /// Corresponds to <c>GET /webhooks</c>.
     /// </summary>
     Task<JsonApiCollectionDocument<WebhookAttributes>?> GetWebhooksAsync(
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Creates a new webhook for the authenticated creator's campaign.
@@ -149,7 +159,8 @@ public interface IPatreonApiClient
     Task<JsonApiDocument<WebhookAttributes>?> CreateWebhookAsync(
         string uri,
         IReadOnlyList<string> triggers,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Updates an existing webhook (e.g. change URI, triggers, or unpause after failures).
@@ -161,7 +172,8 @@ public interface IPatreonApiClient
         bool? paused = null,
         string? uri = null,
         IReadOnlyList<string>? triggers = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Deletes a webhook.

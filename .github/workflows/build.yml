@@ -45,6 +45,11 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore Patreon.Client.slnx
 
+    - name: Check formatting
+      run: |
+        dotnet tool restore
+        dotnet csharpier check .
+
     - name: Build solution
       run: dotnet build Patreon.Client.slnx --configuration Release --no-restore
 

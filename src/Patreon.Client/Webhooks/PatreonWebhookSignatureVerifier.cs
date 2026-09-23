@@ -34,19 +34,23 @@ public sealed class PatreonWebhookSignatureVerifier
     [SuppressMessage(
         "Performance",
         "CA1822:Mark members as static",
-        Justification = "Intentionally an instance method: resolved and consumed via DI.")]
+        Justification = "Intentionally an instance method: resolved and consumed via DI."
+    )]
     public bool Verify(
         byte[] body,
         IReadOnlyDictionary<string, string[]> headers,
-        string webhookSecret)
+        string webhookSecret
+    )
     {
         ArgumentNullException.ThrowIfNull(body);
         ArgumentNullException.ThrowIfNull(headers);
         ArgumentException.ThrowIfNullOrEmpty(webhookSecret);
 
-        if (!headers.TryGetValue(SignatureHeaderName, out string[]? sigValues)
+        if (
+            !headers.TryGetValue(SignatureHeaderName, out string[]? sigValues)
             || sigValues.Length == 0
-            || string.IsNullOrWhiteSpace(sigValues[0]))
+            || string.IsNullOrWhiteSpace(sigValues[0])
+        )
         {
             return false;
         }
@@ -65,6 +69,7 @@ public sealed class PatreonWebhookSignatureVerifier
 
         return CryptographicOperations.FixedTimeEquals(
             Encoding.ASCII.GetBytes(computed),
-            Encoding.ASCII.GetBytes(receivedSig));
+            Encoding.ASCII.GetBytes(receivedSig)
+        );
     }
 }
