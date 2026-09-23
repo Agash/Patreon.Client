@@ -1,11 +1,11 @@
 using System.Security.Cryptography;
 using System.Text;
 using Agash.Webhook.Abstractions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Patreon.Client.Events;
 using Patreon.Client.JsonApi;
 using Patreon.Client.Models;
 using Patreon.Client.Webhooks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Patreon.Client.Tests.Webhooks;
 
@@ -37,7 +37,8 @@ public sealed class PatreonWebhookHandlerTests
         string secret,
         string eventType = "members:create",
         string method = "POST",
-        string contentType = "application/json")
+        string contentType = "application/json"
+    )
     {
         byte[] bodyBytes = Encoding.UTF8.GetBytes(body);
         string sig = Sign(bodyBytes, secret);
@@ -80,8 +81,10 @@ public sealed class PatreonWebhookHandlerTests
             }
             """;
 
-        WebhookHandleResult<PatreonWebhookEvent> result =
-            await _handler.HandleAsync(BuildRequest(body, Secret, "members:create"), Options);
+        WebhookHandleResult<PatreonWebhookEvent> result = await _handler.HandleAsync(
+            BuildRequest(body, Secret, "members:create"),
+            Options
+        );
 
         Assert.IsTrue(result.IsAuthenticated);
         Assert.IsTrue(result.IsKnownEvent);
@@ -124,8 +127,10 @@ public sealed class PatreonWebhookHandlerTests
             }
             """;
 
-        WebhookHandleResult<PatreonWebhookEvent> result =
-            await _handler.HandleAsync(BuildRequest(body, Secret, "members:pledge:update"), Options);
+        WebhookHandleResult<PatreonWebhookEvent> result = await _handler.HandleAsync(
+            BuildRequest(body, Secret, "members:pledge:update"),
+            Options
+        );
 
         Assert.IsTrue(result.IsAuthenticated);
         Assert.IsTrue(result.IsKnownEvent);
@@ -164,8 +169,10 @@ public sealed class PatreonWebhookHandlerTests
             }
             """;
 
-        WebhookHandleResult<PatreonWebhookEvent> result =
-            await _handler.HandleAsync(BuildRequest(body, Secret, "posts:publish"), Options);
+        WebhookHandleResult<PatreonWebhookEvent> result = await _handler.HandleAsync(
+            BuildRequest(body, Secret, "posts:publish"),
+            Options
+        );
 
         Assert.IsTrue(result.IsAuthenticated);
         Assert.IsTrue(result.IsKnownEvent);
@@ -194,8 +201,10 @@ public sealed class PatreonWebhookHandlerTests
     {
         const string body = """{"data":{"id":"res-1","type":"something","attributes":{}}}""";
 
-        WebhookHandleResult<PatreonWebhookEvent> result =
-            await _handler.HandleAsync(BuildRequest(body, Secret, "some:future:event"), Options);
+        WebhookHandleResult<PatreonWebhookEvent> result = await _handler.HandleAsync(
+            BuildRequest(body, Secret, "some:future:event"),
+            Options
+        );
 
         Assert.IsTrue(result.IsAuthenticated);
         Assert.IsFalse(result.IsKnownEvent);
@@ -226,8 +235,10 @@ public sealed class PatreonWebhookHandlerTests
             },
         };
 
-        WebhookHandleResult<PatreonWebhookEvent> result =
-            await _handler.HandleAsync(request, Options);
+        WebhookHandleResult<PatreonWebhookEvent> result = await _handler.HandleAsync(
+            request,
+            Options
+        );
 
         Assert.AreEqual(401, result.Response.StatusCode);
         Assert.IsFalse(result.IsAuthenticated);
@@ -239,8 +250,10 @@ public sealed class PatreonWebhookHandlerTests
     {
         const string body = """{"data":{"id":"x","type":"member","attributes":{}}}""";
 
-        WebhookHandleResult<PatreonWebhookEvent> result =
-            await _handler.HandleAsync(BuildRequest(body, Secret, method: "GET"), Options);
+        WebhookHandleResult<PatreonWebhookEvent> result = await _handler.HandleAsync(
+            BuildRequest(body, Secret, method: "GET"),
+            Options
+        );
 
         Assert.AreEqual(405, result.Response.StatusCode);
         Assert.IsFalse(result.IsAuthenticated);
@@ -268,8 +281,10 @@ public sealed class PatreonWebhookHandlerTests
             },
         };
 
-        WebhookHandleResult<PatreonWebhookEvent> result =
-            await _handler.HandleAsync(request, Options);
+        WebhookHandleResult<PatreonWebhookEvent> result = await _handler.HandleAsync(
+            request,
+            Options
+        );
 
         Assert.AreEqual(400, result.Response.StatusCode);
         Assert.IsFalse(result.IsAuthenticated);
@@ -297,8 +312,10 @@ public sealed class PatreonWebhookHandlerTests
             },
         };
 
-        WebhookHandleResult<PatreonWebhookEvent> result =
-            await _handler.HandleAsync(request, Options);
+        WebhookHandleResult<PatreonWebhookEvent> result = await _handler.HandleAsync(
+            request,
+            Options
+        );
 
         Assert.AreEqual(400, result.Response.StatusCode);
         Assert.IsTrue(result.IsAuthenticated);
@@ -340,8 +357,10 @@ public sealed class PatreonWebhookHandlerTests
             }
             """;
 
-        WebhookHandleResult<PatreonWebhookEvent> result =
-            await _handler.HandleAsync(BuildRequest(body, Secret, "members:create"), Options);
+        WebhookHandleResult<PatreonWebhookEvent> result = await _handler.HandleAsync(
+            BuildRequest(body, Secret, "members:create"),
+            Options
+        );
 
         Assert.IsTrue(result.IsAuthenticated);
         Assert.IsTrue(result.IsKnownEvent);
@@ -397,8 +416,10 @@ public sealed class PatreonWebhookHandlerTests
             }
             """;
 
-        WebhookHandleResult<PatreonWebhookEvent> result =
-            await _handler.HandleAsync(BuildRequest(body, Secret, "members:pledge:create"), Options);
+        WebhookHandleResult<PatreonWebhookEvent> result = await _handler.HandleAsync(
+            BuildRequest(body, Secret, "members:pledge:create"),
+            Options
+        );
 
         Assert.IsTrue(result.IsAuthenticated);
         Assert.IsTrue(result.IsKnownEvent);
@@ -427,8 +448,10 @@ public sealed class PatreonWebhookHandlerTests
             }
             """;
 
-        WebhookHandleResult<PatreonWebhookEvent> result =
-            await _handler.HandleAsync(BuildRequest(body, Secret, "members:update"), Options);
+        WebhookHandleResult<PatreonWebhookEvent> result = await _handler.HandleAsync(
+            BuildRequest(body, Secret, "members:update"),
+            Options
+        );
 
         Assert.IsTrue(result.IsKnownEvent);
         _ = Assert.IsInstanceOfType<PatreonMemberWebhookEvent>(result.Event);

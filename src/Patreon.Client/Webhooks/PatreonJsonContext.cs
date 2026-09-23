@@ -10,7 +10,8 @@ namespace Patreon.Client.Webhooks;
 /// </summary>
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower,
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+)]
 [JsonSerializable(typeof(JsonApiDocument<MemberAttributes>))]
 [JsonSerializable(typeof(JsonApiDocument<CampaignAttributes>))]
 [JsonSerializable(typeof(JsonApiDocument<TierAttributes>))]

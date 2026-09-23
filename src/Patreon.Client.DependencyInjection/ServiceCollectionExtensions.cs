@@ -20,7 +20,8 @@ public static class ServiceCollectionExtensions
     /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
     public static IServiceCollection AddPatreonClient(
         this IServiceCollection services,
-        Action<PatreonClientOptions> configure)
+        Action<PatreonClientOptions> configure
+    )
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configure);
@@ -48,12 +49,15 @@ public static class ServiceCollectionExtensions
         services.TryAddTransient<BearerTokenHandler>();
 
         _ = services
-            .AddHttpClient<IPatreonApiClient, PatreonApiClient>(static (sp, client) =>
-            {
-                client.BaseAddress = new Uri("https://www.patreon.com/api/oauth2/v2/");
-                client.DefaultRequestHeaders.UserAgent.ParseAdd(
-                    "Patreon.Client/1.0 (https://github.com/Agash/Patreon.Client)");
-            })
+            .AddHttpClient<IPatreonApiClient, PatreonApiClient>(
+                static (sp, client) =>
+                {
+                    client.BaseAddress = new Uri("https://www.patreon.com/api/oauth2/v2/");
+                    client.DefaultRequestHeaders.UserAgent.ParseAdd(
+                        "Patreon.Client/1.0 (https://github.com/Agash/Patreon.Client)"
+                    );
+                }
+            )
             .AddHttpMessageHandler<BearerTokenHandler>();
 
         services.TryAddSingleton<PatreonWebhookSignatureVerifier>();

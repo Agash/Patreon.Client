@@ -24,7 +24,8 @@ public static class PatreonEndpointRouteBuilderExtensions
     public static IEndpointConventionBuilder MapPatreonWebhook(
         this IEndpointRouteBuilder endpoints,
         string pattern,
-        Action<PatreonWebhookEndpointOptions> configure)
+        Action<PatreonWebhookEndpointOptions> configure
+    )
     {
         ArgumentNullException.ThrowIfNull(endpoints);
         ArgumentException.ThrowIfNullOrEmpty(pattern);
@@ -32,42 +33,50 @@ public static class PatreonEndpointRouteBuilderExtensions
 
         PatreonWebhookEndpointOptions options = new()
         {
-            ResolveWebhookOptionsAsync = static (_, _) => Task.FromResult(new PatreonWebhookOptions
-            {
-                WebhookSecret = string.Empty,
-            }),
+            ResolveWebhookOptionsAsync = static (_, _) =>
+                Task.FromResult(new PatreonWebhookOptions { WebhookSecret = string.Empty }),
         };
 
         configure(options);
 
-        return endpoints.MapPost(pattern, async context =>
-        {
-            PatreonWebhookHandler handler = context.RequestServices.GetRequiredService<PatreonWebhookHandler>();
+        return endpoints.MapPost(
+            pattern,
+            async context =>
+            {
+                PatreonWebhookHandler handler =
+                    context.RequestServices.GetRequiredService<PatreonWebhookHandler>();
 
-            PatreonWebhookOptions webhookOptions =
-                await options.ResolveWebhookOptionsAsync(context, context.RequestAborted).ConfigureAwait(false);
-
-            WebhookRequest request =
-                await HttpContextWebhookRequestMapper.FromHttpContextAsync(context, context.RequestAborted)
+                PatreonWebhookOptions webhookOptions = await options
+                    .ResolveWebhookOptionsAsync(context, context.RequestAborted)
                     .ConfigureAwait(false);
 
-            WebhookHandleResult<PatreonWebhookEvent> result =
-                await handler.HandleAsync(request, webhookOptions, context.RequestAborted)
+                WebhookRequest request = await HttpContextWebhookRequestMapper
+                    .FromHttpContextAsync(context, context.RequestAborted)
                     .ConfigureAwait(false);
 
-            if (result.Event is PatreonWebhookEvent evt && options.OnEventAsync is not null)
-            {
-                await options.OnEventAsync(evt, context, context.RequestAborted).ConfigureAwait(false);
-            }
+                WebhookHandleResult<PatreonWebhookEvent> result = await handler
+                    .HandleAsync(request, webhookOptions, context.RequestAborted)
+                    .ConfigureAwait(false);
 
-            if (options.OnResultAsync is not null)
-            {
-                await options.OnResultAsync(result, context, context.RequestAborted).ConfigureAwait(false);
-            }
+                if (result.Event is PatreonWebhookEvent evt && options.OnEventAsync is not null)
+                {
+                    await options
+                        .OnEventAsync(evt, context, context.RequestAborted)
+                        .ConfigureAwait(false);
+                }
 
-            await WebhookResponseHttpContextWriter.WriteAsync(context, result.Response, context.RequestAborted)
-                .ConfigureAwait(false);
-        });
+                if (options.OnResultAsync is not null)
+                {
+                    await options
+                        .OnResultAsync(result, context, context.RequestAborted)
+                        .ConfigureAwait(false);
+                }
+
+                await WebhookResponseHttpContextWriter
+                    .WriteAsync(context, result.Response, context.RequestAborted)
+                    .ConfigureAwait(false);
+            }
+        );
     }
 
     /// <summary>
@@ -82,9 +91,19 @@ public static class PatreonEndpointRouteBuilderExtensions
     public static IEndpointConventionBuilder MapPatreonWebhook(
         this IEndpointRouteBuilder endpoints,
         string pattern,
-        Func<HttpContext, CancellationToken, Task<PatreonWebhookOptions>> resolveWebhookOptionsAsync,
+        Func<
+            HttpContext,
+            CancellationToken,
+            Task<PatreonWebhookOptions>
+        > resolveWebhookOptionsAsync,
         Func<PatreonWebhookEvent, HttpContext, CancellationToken, Task>? onEventAsync = null,
-        Func<WebhookHandleResult<PatreonWebhookEvent>, HttpContext, CancellationToken, Task>? onResultAsync = null)
+        Func<
+            WebhookHandleResult<PatreonWebhookEvent>,
+            HttpContext,
+            CancellationToken,
+            Task
+        >? onResultAsync = null
+    )
     {
         ArgumentNullException.ThrowIfNull(resolveWebhookOptionsAsync);
 
@@ -95,6 +114,7 @@ public static class PatreonEndpointRouteBuilderExtensions
                 options.ResolveWebhookOptionsAsync = resolveWebhookOptionsAsync;
                 options.OnEventAsync = onEventAsync;
                 options.OnResultAsync = onResultAsync;
-            });
+            }
+        );
     }
 }

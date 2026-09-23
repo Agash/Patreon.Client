@@ -50,8 +50,10 @@ public sealed class JsonApiIncludedIndex
         Dictionary<(string, string), JsonElement> dict = new(included.Count);
         foreach (JsonElement item in included)
         {
-            if (!item.TryGetProperty("type", out JsonElement typeElem)
-                || !item.TryGetProperty("id", out JsonElement idElem))
+            if (
+                !item.TryGetProperty("type", out JsonElement typeElem)
+                || !item.TryGetProperty("id", out JsonElement idElem)
+            )
             {
                 continue;
             }
@@ -100,8 +102,12 @@ public sealed class JsonApiIncludedIndex
     /// <param name="id">The resource ID.</param>
     /// <param name="options">Optional custom JSON serializer options. Defaults to web-defaults.</param>
     /// <returns>The deserialized attributes, or <see langword="null"/>.</returns>
-    [RequiresUnreferencedCode("Resolves the contract for T by reflection. Use the JsonTypeInfo<T> overload to stay trim-safe.")]
-    [RequiresDynamicCode("Builds the contract for T at run time. Use the JsonTypeInfo<T> overload to stay AOT-safe.")]
+    [RequiresUnreferencedCode(
+        "Resolves the contract for T by reflection. Use the JsonTypeInfo<T> overload to stay trim-safe."
+    )]
+    [RequiresDynamicCode(
+        "Builds the contract for T at run time. Use the JsonTypeInfo<T> overload to stay AOT-safe."
+    )]
     public T? TryGetAttributesAs<T>(string type, string id, JsonSerializerOptions? options = null)
     {
         if (!TryGetAttributesElement(type, id, out JsonElement attrsElem))

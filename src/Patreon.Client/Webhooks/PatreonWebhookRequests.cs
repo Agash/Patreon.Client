@@ -12,13 +12,15 @@ namespace Patreon.Client.Webhooks;
 /// onto the reflection-based serializer and break trimming and Native AOT.
 /// </remarks>
 internal sealed record PatreonWebhookRequest<TAttributes>(
-    [property: JsonPropertyName("data")] PatreonWebhookRequestData<TAttributes> Data);
+    [property: JsonPropertyName("data")] PatreonWebhookRequestData<TAttributes> Data
+);
 
 /// <summary>The <c>data</c> member of a JSON:API webhook request.</summary>
 /// <typeparam name="TAttributes">The attributes payload carried by the request.</typeparam>
 internal sealed record PatreonWebhookRequestData<TAttributes>(
     [property: JsonPropertyName("type")] string Type,
-    [property: JsonPropertyName("attributes")] TAttributes Attributes)
+    [property: JsonPropertyName("attributes")] TAttributes Attributes
+)
 {
     /// <summary>The resource id. Omitted on create, required on update.</summary>
     [JsonPropertyName("id")]
@@ -29,7 +31,8 @@ internal sealed record PatreonWebhookRequestData<TAttributes>(
 /// <summary>Attributes accepted when creating a webhook.</summary>
 internal sealed record PatreonWebhookCreateAttributes(
     [property: JsonPropertyName("uri")] string Uri,
-    [property: JsonPropertyName("triggers")] IReadOnlyList<string> Triggers);
+    [property: JsonPropertyName("triggers")] IReadOnlyList<string> Triggers
+);
 
 /// <summary>
 /// Attributes accepted when updating a webhook. Every member is optional; unset members are omitted

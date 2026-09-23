@@ -1,7 +1,7 @@
 using System.Text.Json;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Patreon.Client.JsonApi;
 using Patreon.Client.Models;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Patreon.Client.Tests.JsonApi;
 
@@ -35,8 +35,9 @@ public sealed class JsonApiDocumentTests
             }
             """;
 
-        JsonApiDocument<MemberAttributes>? doc =
-            JsonSerializer.Deserialize<JsonApiDocument<MemberAttributes>>(json, s_options);
+        JsonApiDocument<MemberAttributes>? doc = JsonSerializer.Deserialize<
+            JsonApiDocument<MemberAttributes>
+        >(json, s_options);
 
         Assert.IsNotNull(doc);
         Assert.IsNotNull(doc.Data);
@@ -76,8 +77,9 @@ public sealed class JsonApiDocumentTests
             }
             """;
 
-        JsonApiCollectionDocument<CampaignAttributes>? doc =
-            JsonSerializer.Deserialize<JsonApiCollectionDocument<CampaignAttributes>>(json, s_options);
+        JsonApiCollectionDocument<CampaignAttributes>? doc = JsonSerializer.Deserialize<
+            JsonApiCollectionDocument<CampaignAttributes>
+        >(json, s_options);
 
         Assert.IsNotNull(doc);
         Assert.IsNotNull(doc.Data);
@@ -108,8 +110,9 @@ public sealed class JsonApiDocumentTests
             }
             """;
 
-        JsonApiCollectionDocument<MemberAttributes>? doc =
-            JsonSerializer.Deserialize<JsonApiCollectionDocument<MemberAttributes>>(json, s_options);
+        JsonApiCollectionDocument<MemberAttributes>? doc = JsonSerializer.Deserialize<
+            JsonApiCollectionDocument<MemberAttributes>
+        >(json, s_options);
 
         Assert.IsNotNull(doc);
         Assert.IsNotNull(doc.Meta);
@@ -136,8 +139,9 @@ public sealed class JsonApiDocumentTests
             }
             """;
 
-        JsonApiDocument<MemberAttributes>? doc =
-            JsonSerializer.Deserialize<JsonApiDocument<MemberAttributes>>(json, s_options);
+        JsonApiDocument<MemberAttributes>? doc = JsonSerializer.Deserialize<
+            JsonApiDocument<MemberAttributes>
+        >(json, s_options);
 
         Assert.IsNotNull(doc);
         Assert.IsNull(doc.Data);

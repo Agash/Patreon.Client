@@ -24,7 +24,8 @@ public sealed class BearerTokenHandler : DelegatingHandler
     /// <inheritdoc />
     protected override Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         ArgumentNullException.ThrowIfNull(request);
 
