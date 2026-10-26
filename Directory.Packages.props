@@ -3,15 +3,19 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
+  <!-- $(DotNetPackageVersion) follows the target framework; Directory.Build.targets sets it. -->
   <ItemGroup>
     <PackageVersion Include="Agash.Webhook.Abstractions" Version="1.0.2" />
     <PackageVersion
       Include="Microsoft.Extensions.DependencyInjection.Abstractions"
-      Version="10.0.14"
+      Version="$(DotNetPackageVersion)"
     />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.14" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="$(DotNetPackageVersion)" />
+    <PackageVersion
+      Include="Microsoft.Extensions.Logging.Abstractions"
+      Version="$(DotNetPackageVersion)"
+    />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="$(DotNetPackageVersion)" />
     <PackageVersion Include="MinVer" Version="8.0.0" />
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="2.0.5" />
   </ItemGroup>
