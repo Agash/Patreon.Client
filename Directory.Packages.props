@@ -5,7 +5,7 @@
 
   <!-- $(DotNetPackageVersion) follows the target framework; Directory.Build.targets sets it. -->
   <ItemGroup>
-    <PackageVersion Include="Agash.Webhook.Abstractions" Version="1.0.2" />
+    <PackageVersion Include="Agash.Webhook.Abstractions" Version="1.0.4-dev2" />
     <PackageVersion
       Include="Microsoft.Extensions.DependencyInjection.Abstractions"
       Version="$(DotNetPackageVersion)"
@@ -22,13 +22,13 @@
 
   <!-- Sample packages -->
   <ItemGroup>
-    <PackageVersion Include="DevTunnels.Client" Version="1.1.0" />
+    <PackageVersion Include="DevTunnels.Client" Version="1.1.3-dev6" />
     <PackageVersion Include="Spectre.Console" Version="0.57.2" />
   </ItemGroup>
 
   <!-- Test packages -->
   <ItemGroup>
-    <PackageVersion Include="MSTest" Version="4.5.2" />
+    <PackageVersion Include="MSTest" Version="4.5.3" />
     <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.12.0" />
   </ItemGroup>
 </Project>
