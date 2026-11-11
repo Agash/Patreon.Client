@@ -126,6 +126,7 @@ public sealed class PatreonWebhookHandler
             ResourceType = doc?.Data?.Type ?? "member",
             Document = doc,
             EntitledTierIds = ExtractEntitledTierIds(doc?.Data?.Relationships),
+            Campaign = ExtractCampaign(doc),
         };
     }
 
@@ -143,7 +144,33 @@ public sealed class PatreonWebhookHandler
             ResourceType = doc?.Data?.Type ?? "member",
             Document = doc,
             EntitledTierIds = ExtractEntitledTierIds(doc?.Data?.Relationships),
+            Campaign = ExtractCampaign(doc),
         };
+    }
+
+    /// <summary>
+    /// Resolves the member's campaign from <c>included</c> through the <c>campaign</c> relationship.
+    /// </summary>
+    private static CampaignAttributes? ExtractCampaign(JsonApiDocument<MemberAttributes>? doc)
+    {
+        if (
+            doc?.Included is not { Count: > 0 } included
+            || doc.Data?.Relationships is not { } relationships
+            || !relationships.TryGetProperty("campaign", out JsonElement campaign)
+            || !campaign.TryGetProperty("data", out JsonElement data)
+            || data.ValueKind != JsonValueKind.Object
+            || !data.TryGetProperty("id", out JsonElement id)
+            || id.GetString() is not { Length: > 0 } campaignId
+        )
+        {
+            return null;
+        }
+
+        return new JsonApiIncludedIndex(included).TryGetAttributesAs(
+            "campaign",
+            campaignId,
+            PatreonJsonContext.Default.CampaignAttributes
+        );
     }
 
     /// <summary>

@@ -23,6 +23,7 @@ namespace Patreon.Client.Webhooks;
 [JsonSerializable(typeof(JsonApiCollectionDocument<PostAttributes>))]
 [JsonSerializable(typeof(MemberAttributes))]
 [JsonSerializable(typeof(CampaignAttributes))]
+[JsonSerializable(typeof(CampaignAttributes))]
 [JsonSerializable(typeof(TierAttributes))]
 [JsonSerializable(typeof(PostAttributes))]
 [JsonSerializable(typeof(UserAttributes))]

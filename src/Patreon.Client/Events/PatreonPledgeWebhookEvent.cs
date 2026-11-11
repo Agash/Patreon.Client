@@ -30,4 +30,11 @@ public sealed record PatreonPledgeWebhookEvent : PatreonWebhookEvent
     /// at parse time so callers do not need to navigate the raw JSON.
     /// </summary>
     public IReadOnlyList<string> EntitledTierIds { get; init; } = [];
+
+    /// <summary>
+    /// Gets the member's campaign, resolved from the payload's <c>included</c> resources through the member's
+    /// <c>campaign</c> relationship. Null when the webhook's scopes leave it out. Member amounts such as
+    /// <see cref="MemberAttributes.WillPayAmountCents"/> are in <see cref="CampaignAttributes.Currency"/>.
+    /// </summary>
+    public CampaignAttributes? Campaign { get; init; }
 }

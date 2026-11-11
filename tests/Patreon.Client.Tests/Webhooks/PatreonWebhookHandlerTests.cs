@@ -429,6 +429,35 @@ public sealed class PatreonWebhookHandlerTests
         Assert.AreEqual(2, pledge.EntitledTierIds.Count);
         Assert.Contains("tier-silver", pledge.EntitledTierIds);
         Assert.Contains("tier-gold", pledge.EntitledTierIds);
+        Assert.IsNull(pledge.Campaign);
+    }
+
+    [TestMethod]
+    public async Task HandleAsync_PledgeEvent_WithIncludedCampaign_ResolvesCampaignCurrency()
+    {
+        const string body = """
+            {
+              "data": {
+                "id": "member-eur",
+                "type": "member",
+                "attributes": { "full_name": "Eve", "will_pay_amount_cents": 500 },
+                "relationships": { "campaign": { "data": { "type": "campaign", "id": "camp-9" } } }
+              },
+              "included": [
+                { "type": "user", "id": "user-1", "attributes": { "full_name": "Eve" } },
+                { "type": "campaign", "id": "camp-9", "attributes": { "name": "Studio", "currency": "EUR", "patron_count": 12 } }
+              ]
+            }
+            """;
+
+        WebhookHandleResult<PatreonWebhookEvent> result = await _handler.HandleAsync(
+            BuildRequest(body, Secret, "members:pledge:create"),
+            Options
+        );
+
+        var pledge = Assert.IsInstanceOfType<PatreonPledgeWebhookEvent>(result.Event);
+        Assert.AreEqual("EUR", pledge.Campaign?.Currency);
+        Assert.AreEqual(12, pledge.Campaign?.PatronCount);
     }
 
     [TestMethod]
