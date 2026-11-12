@@ -16,7 +16,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Agash.Webhook.Abstractions" />
+    <ProjectReference
+      Include="$(WebhookAbstractionsProject)"
+      Condition="'$(UseLocalWebhookAbstractions)' == 'true'"
+    />
+    <PackageReference
+      Include="Agash.Webhook.Abstractions"
+      Condition="'$(UseLocalWebhookAbstractions)' != 'true'"
+    />
     <PackageReference Include="MinVer" PrivateAssets="all" />
     <PackageReference Include="DotNet.ReproducibleBuilds" PrivateAssets="all" />
   </ItemGroup>

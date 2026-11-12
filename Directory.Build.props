@@ -25,4 +25,15 @@
       >true</GenerateDocumentationFile>
     <PackageReadmeFile Condition="'$(IsPackable)' == 'true'">README.md</PackageReadmeFile>
   </PropertyGroup>
+  <!-- Agash.Webhook.Abstractions builds from a sibling checkout when one sits next to this repository (StreamWeaver
+       keeps every owned library as a submodule under external/), or from where WebhookAbstractionsProject points,
+       so a change to it is exercised here before it is released; elsewhere the published package is used. Set
+       UseLocalWebhookAbstractions=false to build against the package. -->
+  <PropertyGroup>
+    <WebhookAbstractionsProject Condition="'$(WebhookAbstractionsProject)' == ''"
+      >$(MSBuildThisFileDirectory)../Agash.Webhook.Abstractions/src/Agash.Webhook.Abstractions/Agash.Webhook.Abstractions.csproj</WebhookAbstractionsProject>
+    <UseLocalWebhookAbstractions
+      Condition="'$(UseLocalWebhookAbstractions)' == '' and Exists('$(WebhookAbstractionsProject)')"
+      >true</UseLocalWebhookAbstractions>
+  </PropertyGroup>
 </Project>

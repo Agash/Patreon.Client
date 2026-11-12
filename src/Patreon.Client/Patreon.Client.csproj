@@ -12,7 +12,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Agash.Webhook.Abstractions" />
+    <ProjectReference
+      Include="$(WebhookAbstractionsProject)"
+      Condition="'$(UseLocalWebhookAbstractions)' == 'true'"
+    />
+    <PackageReference
+      Include="Agash.Webhook.Abstractions"
+      Condition="'$(UseLocalWebhookAbstractions)' != 'true'"
+    />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
